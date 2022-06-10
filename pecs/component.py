@@ -8,7 +8,6 @@ if TYPE_CHECKING:
 import json
 import sys
 import traceback
-from dataclasses import dataclass
 
 
 IGNORED_ATTRIBUTES = [
@@ -46,7 +45,6 @@ class ComponentMeta(type):
         return hash(self._comp_id)
 
 
-@dataclass
 class Component(metaclass=ComponentMeta):
     _comp_id: str = ""
     _allow_multiple: bool = False
