@@ -1,4 +1,9 @@
-## PECS
+# PECS
+[![Coverage Status](https://coveralls.io/repos/github/krummja/PECS/badge.svg?branch=master)](https://coveralls.io/github/krummja/PECS?branch=master)
+
+![Armstrong](/assets/lm_pecs_armstrong.png)
+
+
 
 ```python
 import pecs
@@ -30,7 +35,6 @@ class Health(pecs.Component):
 class IsFrozen(pecs.Component):
     """Flag component denoting a frozen Entity."""
 
-
 engine = pecs.Engine()
 
 engine.register_component(Position)
@@ -43,7 +47,18 @@ entity = world.create_entity()
 
 entity.add(Position, { 'x': 10, 'y': -2 })
 entity[Velocity] = Velocity(10, 100)
-
-# TODO Implement this style of initialization
 entity[Health] = { 'maximum': 300 }
+```
+
+### Queries
+
+```python
+kinematics = world.query()
+    .having(Position, Velocity)
+    .without(IsFrozen)
+
+warrior_equipment = world.query()
+    .select('equipment')
+    .having(Constitution)
+    .without(Intelligence)
 ```

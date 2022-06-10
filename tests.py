@@ -72,9 +72,6 @@ class EntityTest(unittest.TestCase):
         self.assertTrue(self.entity2.get(Health).current == 30)
         self.assertTrue(self.entity2.get(Health).current != self.entity.get(Health).current)
 
-    def test_multiple_components(self):
-        pass
-
     def test_entity_property_indexing(self):
         zombie = pecs.Entity("Zombie A")
         zombie[Position] = Position(100, 100)

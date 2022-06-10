@@ -104,8 +104,8 @@ class Component(metaclass=ComponentMeta):
         self._entity = value
 
     @property
-    def serialized(self) -> Dict[str, Any]:
-        return {self.comp_id: self.__getstate__()}
+    def serialized(self) -> str:
+        return json.dumps({self.comp_id: self.__getstate__()})
 
     def on_attached(self, entity: Entity) -> None:
         """Callback invoked whenever the component is attached to an entity."""
@@ -116,8 +116,11 @@ class Component(metaclass=ComponentMeta):
         pass
 
     def on_event(self, evt: EntityEvent) -> Optional[EntityEvent]:
-        """Generic event callback. Define specific events in Component
-        subclasses by adding methods prepended with `on_`.
+        """Generic event callback.
+
+        This calls immediately prior to any custom callbacks on the Component.
+        Define specific events in Component subclasses by adding methods
+        prefixed with `on_`.
         """
         pass
 
