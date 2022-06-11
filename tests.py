@@ -45,16 +45,14 @@ class IsFrozen(pecs.Component):
 class EntityTest(unittest.TestCase):
 
     def setUp(self):
-        self.entities = [
-            pecs.Entity("zombie A"),
-            pecs.Entity("zombie B"),
-        ]
+        self.ecs = pecs.Engine()
+        self.world = self.ecs.create_world()
 
-        self.entity = pecs.Entity('TEST')
+        self.entity = self.world.create_entity(uid="TEST1")
         self.entity[Position] = Position(10, 10)
         self.entity.add(Health(100))
 
-        self.entity2 = pecs.Entity('TEST 2')
+        self.entity2 = self.world.create_entity(uid="TEST2")
         self.entity2[Health] = Health(50)
 
     def test_entity_initialization(self):
@@ -73,7 +71,7 @@ class EntityTest(unittest.TestCase):
         self.assertTrue(self.entity2.get(Health).current != self.entity.get(Health).current)
 
     def test_entity_property_indexing(self):
-        zombie = pecs.Entity("Zombie A")
+        zombie = self.world.create_entity("Zombie A")
         zombie[Position] = Position(100, 100)
         zombie[Velocity] = { 'x': 10, 'y': 10 }
         zombie.add(Health, { 'maximum': 20 })
