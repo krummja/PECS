@@ -2,16 +2,24 @@ from __future__ import annotations
 from typing import *
 
 if TYPE_CHECKING:
+    from pecs.world import World
+
+from collections import OrderedDict
+from pecs.component import Component, ComponentMeta
+from pecs.entity_event import EntityEvent, EventData
+
+
+def attach_component(entity: Entity, component: Component | ComponentMeta):
     pass
 
-from pecs.component import ComponentMeta
-from collections import OrderedDict
-from pecs.component import Component
+
+def remove_component(entity: Entity, component: Component | ComponentMeta):
+    pass
 
 
 class Entity:
 
-    def __init__(self, uid: str) -> None:
+    def __init__(self, world: World, uid: str) -> None:
         self._cbits = 0
         self._components = OrderedDict()
         self._qeligible = True
@@ -57,6 +65,10 @@ class Entity:
     def __contains__(self, component_class: ComponentMeta) -> bool:
         return self._components.__contains__(component_class)
 
+    @property
+    def cbits(self) -> int:
+        return self._cbits
+
     def add(
             self,
             component: Component | ComponentMeta,
@@ -78,3 +90,25 @@ class Entity:
                 if key.comp_id == component_class_or_name.upper():
                     return value
         return self._components.get(component_class_or_name)
+
+    def has(self, component: Component | ComponentMeta) -> bool:
+        pass
+
+    def owns(self, component: Component | ComponentMeta) -> bool:
+        pass
+
+    def remove(self, component: Component | ComponentMeta) -> None:
+        pass
+
+    def destroy(self) -> None:
+        pass
+
+    def serialize(self) -> str:
+        pass
+
+    def fire_event(
+            self,
+            event: str,
+            payload: Optional[Dict[str, Any] | EventData] = None
+        ) -> EntityEvent:
+        pass

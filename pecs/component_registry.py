@@ -3,7 +3,7 @@ from typing import *
 
 from collections import OrderedDict
 
-from pecs.component import Component
+from pecs.component import Component, ComponentMeta
 
 
 class ComponentRegistry:
@@ -12,6 +12,8 @@ class ComponentRegistry:
         self._cbit = 0
         self._map: OrderedDict[str, Component] = OrderedDict()
 
-    def register(self, component: Component) -> None:
+    def register(self, component_class: ComponentMeta) -> None:
         pass
 
+    def __getitem__(self, component_class: ComponentMeta) -> Component:
+        pass
