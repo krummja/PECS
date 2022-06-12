@@ -3,8 +3,7 @@ from typing import *
 
 if TYPE_CHECKING:
     from pecs.engine import Engine
-    from pecs.query import Query
-    from collections.abc import ValuesView
+    from pecs.query import Query, ComponentQuery
 
 from uuid import uuid1
 from collections import OrderedDict
@@ -26,8 +25,8 @@ class World:
         self._entities: OrderedDict[str, Entity] = OrderedDict()
 
     @property
-    def entities(self) -> ValuesView[str, Entity]:
-        return self._entities.values()
+    def entities(self):
+        return self._entities
 
     def get_entity(self, uid: str) -> Entity | None:
         """Look up an Entity that currently exists in the World.
@@ -66,26 +65,41 @@ class World:
         for entity in to_destroy:
             entity.destroy()
 
-    def query(self) -> Query:
-        return Query(self)
-
     def destroy(self):
-        pass
+        self.destroy_entities()
+        self._world_id = 0
+        self._queries = []
+        self._entities = OrderedDict()
 
-    def create_query(self, all_of=None, any_of=None, none_of=None) -> Query:
-        pass
+    def create_query(
+            self,
+            all_of: Optional[ComponentQuery] = None,
+            any_of: Optional[ComponentQuery] = None,
+            none_of: Optional[ComponentQuery] = None
+        ) -> Query:
+        query = Query(self, all_of, any_of, none_of)
+        self._queries.append(query)
+        return query
 
-    def candidate(self, entity: Entity) -> bool:
-        pass
+    def candidate(self, entity: Entity) -> None:
+        for query in self._queries:
+            query.candidate(entity)
 
-    def serialize(self):
+    def create_prefab(self, name: str, properties: dict[str, Any], uid: str):
+        properties = properties or {}
+        return self._engine.prefabs.create(self, name, properties, uid)
+
+    def serialize(self) -> str:
         pass
 
     def deserialize(self, world_data: str):
         pass
 
-    def _create_or_get_by_uid(self, uid: str):
-        pass
-
     def _deserialize_entity(self, entity_data: str):
         pass
+
+    def _create_or_get_by_uid(self, uid: str):
+        try:
+            return self.get_entity(uid)
+        except KeyError:
+            return self.create_entity(uid)

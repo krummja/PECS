@@ -3,11 +3,7 @@ from typing import *
 
 if TYPE_CHECKING:
     from pecs.engine import Engine
-    from pecs.query import Query
-    from pecs.component import ComponentMeta
-
-
-ComponentQuery = list[ComponentMeta]
+    from pecs.query import Query, ComponentQuery
 
 
 class System:

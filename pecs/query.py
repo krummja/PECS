@@ -2,12 +2,16 @@ from __future__ import annotations
 from typing import *
 
 if TYPE_CHECKING:
-    from pecs.component import ComponentMeta
     from pecs.entity import Entity
     from pecs.world import World
 
 from functools import reduce
+
+from pecs.component import ComponentMeta
 from pecs.helpers import *
+
+
+ComponentQuery = list[ComponentMeta]
 
 
 class Query:
@@ -16,20 +20,16 @@ class Query:
     def __init__(
             self,
             world: World,
-            all_of: Optional[List[ComponentMeta]] = None,
-            any_of: Optional[List[ComponentMeta]] = None,
-            none_of: Optional[List[ComponentMeta]] = None,
+            all_of: Optional[ComponentQuery] = None,
+            any_of: Optional[ComponentQuery] = None,
+            none_of: Optional[ComponentQuery] = None,
         ) -> None:
         self._cache = []
         self._world = world
-
-        self.all_of = all_of
-        self.any_of = any_of
-        self.none_of = none_of
-
-        self._all = reduce(lambda a, b: add_bit(a, b.cbit), self.all_of, 0)
-        self._any = reduce(lambda a, b: add_bit(a, b.cbit), self.any_of, 0)
-        self._none = reduce(lambda a, b: add_bit(a, b.cbit), self.none_of, 0)
+        self._all = reduce(lambda a, b: add_bit(a, b.cbit), all_of or [], 0)
+        self._any = reduce(lambda a, b: add_bit(a, b.cbit), any_of or [], 0)
+        self._none = reduce(lambda a, b: add_bit(a, b.cbit), none_of or [], 0)
+        self.refresh()
 
     @property
     def result(self):
@@ -63,5 +63,5 @@ class Query:
 
     def refresh(self) -> None:
         self._cache = []
-        for entity in self.world.entities:
+        for _, entity in self._world.entities.items():
             self.candidate(entity)

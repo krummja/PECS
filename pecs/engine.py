@@ -11,9 +11,6 @@ from pecs.component_registry import ComponentRegistry
 from pecs.prefab_registry import PrefabRegistry
 
 
-ComponentDecorator = TypeVar("ComponentDecorator", bound=ComponentMeta)
-
-
 class Engine:
 
     world: World
@@ -31,12 +28,12 @@ class Engine:
         self.world = World(self)
         return self.world
 
-    def register_component(self, component: ComponentMeta) -> None:
+    def register_component(self, component_class: ComponentMeta) -> None:
         """Add a Component class to the ComponentRegistry for later
         instantiation.
 
-        :param component:
+        :param component_class:
             The Component class to register. Note that this must be the
             *class* and not an instance of a Component.
         """
-        self.components.register(component)
+        self.components.register(component_class)

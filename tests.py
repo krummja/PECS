@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import unittest
 import pecs
+import random
 
 
 class Position(pecs.Component):
@@ -20,7 +21,6 @@ class Velocity(pecs.Component):
         self.y = y
 
     def on_test_event(self, evt: pecs.EntityEvent) -> pecs.EntityEvent:
-        print(evt.data)
         return evt
 
 
@@ -58,7 +58,41 @@ class IsFrozen(pecs.Component):
     """Flag Component denoting a frozen Entity."""
 
 
-class EntityTest(unittest.TestCase):
+class TestBase(unittest.TestCase):
+
+    ecs: pecs.Engine
+    world: pecs.World
+
+    def setUp(self):
+        self.test_initializer()
+
+    def test_initializer(self) -> unittest.TestCase:
+        self.ecs = pecs.Engine()
+        self.ecs.register_component(Position)
+        self.ecs.register_component(Velocity)
+        self.ecs.register_component(Health)
+        self.ecs.register_component(IsFrozen)
+        self.ecs.register_component(Attacker)
+        self.world = self.ecs.create_world()
+        return self.initialize_entities(50)
+
+    def initialize_entities(self, count: int = 10) -> unittest.TestCase:
+        for _ in range(count):
+            entity = self.world.create_entity()
+            entity.add(Position, {'x': random.randint(-50, 50), 'y': random.randint(-50, 50)})
+            entity.add(Velocity, {'x': 0, 'y': 0})
+            entity.add(Health, {'maximum': random.randint(50, 300)})
+        for _ in range(count // 2):
+            entity = self.world.create_entity()
+            entity.add(Position, {'x': random.randint(-50, 50), 'y': random.randint(-50, 50)})
+            entity.add(Velocity, {'x': 0, 'y': 0})
+            entity.add(Health, {'maximum': random.randint(50, 300)})
+            entity.add(IsFrozen)
+        return self
+
+
+
+class EntityTests(unittest.TestCase):
 
     def setUp(self):
         self.ecs = pecs.Engine()
@@ -70,11 +104,11 @@ class EntityTest(unittest.TestCase):
 
         self.world = self.ecs.create_world()
 
-        self.entity = self.world.create_entity(uid="TEST1")
+        self.entity = self.world.create_entity()
         self.entity.add(Position, { 'x': 10, 'y': 10 })
         self.entity.add(Health, { 'maximum': 100 })
 
-        self.entity2 = self.world.create_entity(uid="TEST2")
+        self.entity2 = self.world.create_entity()
         self.entity2.add(Health, { 'maximum': 50 })
 
     def test_entity_initialization(self):
@@ -116,7 +150,7 @@ class EntityTest(unittest.TestCase):
         self.assertTrue(result.data.target == zombie)
         self.assertFalse(result.data.target is None)
 
-    def test_reduce_health(self):
+    def test_target_fire_event(self):
         survivor = self.world.create_entity()
         survivor.add(Health, { 'maximum': 100 })
         survivor.add(Attacker, {'strength': 5 })
@@ -132,6 +166,39 @@ class EntityTest(unittest.TestCase):
 
         survivor_health: Health = survivor[Health]
         self.assertTrue(survivor_health.current == 62.5)
+
+    def test_entity_has_component(self):
+        self.assertTrue(self.entity.has(Position))
+
+
+class QueryTests(TestBase):
+
+    def test_entityCount(self):
+        self.assertTrue(len(self.world.entities) == 75)
+
+    def test_queryCreation(self):
+        query1 = self.world.create_query(
+            all_of=[Position, Velocity]
+        )
+
+        query2 = self.world.create_query(
+            all_of=[Position, Velocity],
+            none_of=[IsFrozen]
+        )
+
+        self.assertTrue(len(query1.result) == 75)
+        self.assertTrue(len(query2.result) == 50)
+
+
+class ComponentTests(TestBase):
+
+    def test_component_add_remove(self):
+        entity = self.world.create_entity()
+        entity.add(Position, { 'x': 0, 'y': 0 })
+        self.assertTrue(entity.has(Position))
+
+        entity.remove(Position)
+        self.assertFalse(entity.has(Position))
 
 
 if __name__ == '__main__':

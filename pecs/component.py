@@ -20,10 +20,12 @@ IGNORED_ATTRIBUTES = [
 
 
 class ComponentMeta(type):
+
+    cbit: int
+    entity: Entity
+
     _comp_id: str
     _allow_multiple: bool
-    _cbit: int
-    _entity: Entity
 
     def __new__(
             mcs: Type[ComponentMeta],
@@ -41,85 +43,36 @@ class ComponentMeta(type):
     def comp_id(self) -> str:
         return self._comp_id
 
-    @property
-    def cbit(cls) -> int:
-        return cls._cbit
-
-    @cbit.setter
-    def cbit(cls, value: int) -> None:
-        cls._cbit = value
-
     def __hash__(self) -> int:
         return hash(self._comp_id)
 
 
 class Component(metaclass=ComponentMeta):
+
+    cbit: int = 0
+    entity: Entity | None = None
+
     _comp_id: str = ""
     _allow_multiple: bool = False
-    _cbit: int = 0
-    _entity: Entity | None = None
     _count: int = 0
-
-    def __getstate__(self) -> str:
-        state = {}
-        for symbol in dir(self):
-            if symbol[0] != "_" and symbol not in IGNORED_ATTRIBUTES:
-                attr = getattr(self, symbol)
-                if not isinstance(attr, Callable):
-                    state[symbol] = attr
-        return json.dumps(state)
-
-    def __setstate__(self, serialized_state: str) -> None:
-        state = json.loads(serialized_state)
-        self.__dict__.update(state)
-
-    def __eq__(self, other: Any) -> bool:
-        if not isinstance(other, Component):
-            return False
-        return self._cbit == other._cbit
-
-    def __str__(self) -> str:
-        return str(self._comp_id) + ": " + str(self.__getstate__())
-
-    def __hash__(self) -> int:
-        return hash(self._comp_id)
 
     @property
     def allow_multiple(self) -> bool:
+        """Whether to allow multiple instances of the Component type."""
         return self._allow_multiple
 
     @property
-    def cbit(self) -> int:
-        return self._cbit
-
-    @cbit.setter
-    def cbit(self, value: int) -> None:
-        self._cbit = value
-
-    @property
     def comp_id(self) -> str:
+        """Normalized class name for consistent lookup."""
         return self._comp_id
 
-    @property
-    def entity(self) -> Entity | None:
-        if self._entity is not None:
-            return self._entity
-
-    @entity.setter
-    def entity(self, value: Entity) -> None:
-        self._entity = value
-
-    @property
-    def serialized(self) -> str:
-        return json.dumps({self.comp_id: self.__getstate__()})
-
     def attach(self, entity: Entity) -> None:
-        self._entity = entity
+        self.entity = entity
         self.on_attached(entity)
 
     def destroy(self):
         self.on_destroyed()
-        self._entity = None
+        self.entity = None
 
     def handle_event(self, evt: EntityEvent) -> Any:
         self.on_event(evt)
@@ -148,3 +101,30 @@ class Component(metaclass=ComponentMeta):
         prefixed with `on_`.
         """
         pass
+
+    def serialize(self) -> str:
+        return json.dumps({self.comp_id: self.__getstate__()})
+
+    def __getstate__(self) -> str:
+        state = {}
+        for symbol in dir(self):
+            if symbol[0] != "_" and symbol not in IGNORED_ATTRIBUTES:
+                attr = getattr(self, symbol)
+                if not isinstance(attr, Callable):
+                    state[symbol] = attr
+        return json.dumps(state)
+
+    def __setstate__(self, serialized_state: str) -> None:
+        state = json.loads(serialized_state)
+        self.__dict__.update(state)
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Component):
+            return False
+        return self.cbit == other.cbit
+
+    def __str__(self) -> str:
+        return str(self._comp_id) + ": " + str(self.__getstate__())
+
+    def __hash__(self) -> int:
+        return hash(self._comp_id)

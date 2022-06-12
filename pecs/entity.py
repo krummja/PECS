@@ -11,7 +11,7 @@ from pecs.entity_event import EntityEvent, EventData
 
 
 def remove_component(entity: Entity, component: ComponentMeta) -> None:
-    del entity.components[component.comp_id]
+    del entity.components[component]
     entity._cbits = subtract_bit(entity.cbits, component.cbit)
     entity.candidacy()
 
@@ -62,7 +62,7 @@ class Entity:
         return self._cbits
 
     @property
-    def components(self) -> OrderedDict[str, Component]:
+    def components(self) -> OrderedDict[ComponentMeta, Component]:
         return self._components
 
     def candidacy(self) -> None:
@@ -83,6 +83,9 @@ class Entity:
             instance.attach(self)
 
             self._components[component] = instance
+            self._cbits = add_bit(self._cbits, instance.cbit)
+            self.candidacy()
+
         else:
             raise Exception(f"Invalid Component initializer! Aborting.")
 
@@ -95,7 +98,9 @@ class Entity:
         return self._components.get(component_class_or_name)
 
     def has(self, component: ComponentMeta) -> bool:
-        instance: Component = self.get(component)
+        instance: Component | None = self.get(component)
+        if instance is None:
+            return False
         return has_bit(self._cbits, instance.cbit)
 
     def owns(self, component: ComponentMeta) -> bool:
