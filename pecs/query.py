@@ -11,7 +11,7 @@ from pecs.component import ComponentMeta
 from pecs.helpers import *
 
 
-ComponentQuery = list[ComponentMeta]
+ComponentQuery = List[ComponentMeta]
 
 
 class Query:
