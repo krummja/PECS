@@ -21,15 +21,9 @@ class World:
 
     def __init__(self, engine: Engine) -> None:
         self._engine = engine
-
         self._world_id: int = 0
         self._queries: list[Query] = []
         self._entities: OrderedDict[str, Entity] = OrderedDict()
-
-    @property
-    def engine(self) -> Engine:
-        """Reference to the Engine that this World is bound to."""
-        return self._engine
 
     @property
     def entities(self) -> ValuesView[str, Entity]:
@@ -56,7 +50,7 @@ class World:
             The newly created Entity.
         """
         uid = uid or self.create_uid()
-        entity = Entity(self, uid)
+        entity = Entity(self._engine, uid)
         self._entities[uid] = entity
         return entity
 
@@ -78,7 +72,7 @@ class World:
     def destroy(self):
         pass
 
-    def create_query(self, any_of=None, all_of=None, none_of=None) -> Query:
+    def create_query(self, all_of=None, any_of=None, none_of=None) -> Query:
         pass
 
     def candidate(self, entity: Entity) -> bool:

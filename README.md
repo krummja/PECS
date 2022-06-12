@@ -1,7 +1,7 @@
 # PECS
 [![Tests](https://github.com/krummja/PECS/actions/workflows/main.yml/badge.svg)](https://github.com/krummja/PECS/actions/workflows/main.yml) [![Coverage Status](https://coveralls.io/repos/github/krummja/PECS/badge.svg?branch=master)](https://coveralls.io/github/krummja/PECS?branch=master)
 
-![Armstrong](/assets/lm_pecs_armstrong.png)
+![Armstrong](/static/lm_pecs_armstrong.png)
 
 PECS is the ✨Respectably Muscled✨ Python ECS library that aims to provide a powerful, user-friendly, and fast-as-hell framework for game development.
 
@@ -38,6 +38,14 @@ class Position(pecs.Component):
         self.y = y
         
         
+class Velocity(pecs.Component):
+    """Representation of an Entity's velocity in 2D space."""
+    
+    def __init__(self, x: int = 0, y: int = 0) -> None:
+        self.x = x
+        self.y = y
+        
+        
 class Health(pecs.Component):
     """Representation of an Entity's health."""
     
@@ -66,30 +74,48 @@ entity = world.create_entity()
 # Finally, we can add components to our newly created Entity.
 entity.add(Position, { 'x': 10, 'y': -2 })
 entity.add(Health, { 'maximum': 100 })
-entity.add(IsFrozen())
-```
-
-### Component Initialization Patterns
-
-Components can be initialized in a few different ways, depending on your preference:
-
-#### Using `Entity.add` and a properties dict:
-```python
-zombie.add(Position, { 'x': 0, 'y': 123 })
-```
-
-#### Direct indexing with property dict assignment:
-```python
-hunter[Health] = { 'maximum': 300 }
-```
-
-#### Direct indexing with class instancing:
-```python
-yeti[IsFrozen] = IsFrozen()
+entity.add(IsFrozen)
 ```
 
 ### Queries
 
 ```python
-
+kinematics = world.create_query(
+    all_of = [Position, Velocity],
+    none_of = [IsFrozen],
+)
 ```
+
+```python
+def process(dt):
+    for entity in targets.result:
+        entity[Position].x += entity[Velocity].x * dt
+        entity[Position].y += entity[Velocity].y * dt
+```
+
+### Broadcasting Events to Components
+
+```python
+class Legs(pecs.Component):
+
+    def on_try_move(self, evt: EntityEvent) -> None:
+        pass        
+```
+
+## Notes & Ideas
+
+- Create a context manager for a component's owning entity, similar to the way the Request object is used in Flask:
+
+
+```python
+from pecs import entity
+
+class Legs(pecs.Component):
+
+    def on_try_move(self, evt: EntityEvent) -> None:
+        if self.is_blocked(*evt.data.target):
+            if entity[Position].surrounding.is_interactable(*evt.data.target):
+                entity.fire_event('try_interact', evt.data)
+```
+
+The `entity` object would get its specific value from the context of the method when it's called as part of event listening.

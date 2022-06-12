@@ -2,24 +2,26 @@ from __future__ import annotations
 from typing import *
 
 if TYPE_CHECKING:
-    from pecs.world import World
+    from pecs.engine import Engine
 
 from collections import OrderedDict
+from pecs.helpers import *
 from pecs.component import Component, ComponentMeta
 from pecs.entity_event import EntityEvent, EventData
 
 
-def attach_component(entity: Entity, component: Component | ComponentMeta):
-    pass
-
-
-def remove_component(entity: Entity, component: Component | ComponentMeta):
-    pass
+def remove_component(entity: Entity, component: ComponentMeta) -> None:
+    del entity.components[component.comp_id]
+    entity._cbits = subtract_bit(entity.cbits, component.cbit)
+    entity.candidacy()
 
 
 class Entity:
 
-    def __init__(self, world: World, uid: str) -> None:
+    def __init__(self, engine: Engine, uid: str) -> None:
+        self.is_destroyed = False
+
+        self._engine = engine
         self._cbits = 0
         self._components = OrderedDict()
         self._qeligible = True
@@ -32,16 +34,6 @@ class Entity:
                 if key.comp_id == component_class_or_name.upper():
                     return value
         return self._components.get(component_class_or_name)
-
-    def __setitem__(
-            self,
-            component_class: ComponentMeta,
-            component_or_properties: Component | Dict[str, Any]
-        ) -> None:
-        if isinstance(component_or_properties, Component):
-            self._components[component_class] = component_or_properties
-        elif isinstance(component_or_properties, dict):
-            self._components[component_class] = component_class(**component_or_properties)
 
     def __str__(self) -> str:
         return self._uid
@@ -69,17 +61,28 @@ class Entity:
     def cbits(self) -> int:
         return self._cbits
 
+    @property
+    def components(self) -> OrderedDict[str, Component]:
+        return self._components
+
+    def candidacy(self) -> None:
+        if self._qeligible:
+            self._engine.world.candidate(self)
+
     def add(
             self,
-            component: Component | ComponentMeta,
+            component: ComponentMeta,
             component_properties: Optional[Dict[str, Any]] = None
         ) -> None:
         """Add a new Component instance to this Entity."""
-        if isinstance(component, ComponentMeta) and component_properties is not None:
-            instance = component(**component_properties)
+        if isinstance(component, ComponentMeta):
+            properties = component_properties or {}
+            component_class = self._engine.components[component.comp_id]
+
+            instance: Component = component_class(**properties)
+            instance.attach(self)
+
             self._components[component] = instance
-        elif isinstance(component, Component):
-            self._components[component.__class__] = component
         else:
             raise Exception(f"Invalid Component initializer! Aborting.")
 
@@ -91,17 +94,27 @@ class Entity:
                     return value
         return self._components.get(component_class_or_name)
 
-    def has(self, component: Component | ComponentMeta) -> bool:
-        pass
+    def has(self, component: ComponentMeta) -> bool:
+        instance: Component = self.get(component)
+        return has_bit(self._cbits, instance.cbit)
 
-    def owns(self, component: Component | ComponentMeta) -> bool:
-        pass
+    def owns(self, component: ComponentMeta) -> bool:
+        instance: Component = self.get(component)
+        return instance.entity == self
 
-    def remove(self, component: Component | ComponentMeta) -> None:
-        pass
+    def remove(self, component: ComponentMeta) -> None:
+        remove_component(self, component)
 
     def destroy(self) -> None:
-        pass
+        to_destroy = []
+        for name, component in self._components.items():
+            to_destroy.append(component)
+        for component in to_destroy:
+            self.remove(component)
+            component.destroy()
+        self._engine.world.destroy_entity(self._uid)
+        self._components.clear()
+        self.is_destroyed = True
 
     def serialize(self) -> str:
         pass
@@ -109,6 +122,16 @@ class Entity:
     def fire_event(
             self,
             event: str,
-            payload: Optional[Dict[str, Any] | EventData] = None
+            data: Optional[Dict[str, Any] | EventData] = None
         ) -> EntityEvent:
-        pass
+        if isinstance(data, EventData):
+            data = data.record
+        else:
+            data = data or {}
+
+        evt = EntityEvent(event, data)
+        for component in self.components.values():
+            component.handle_event(evt)
+            if evt.prevented:
+               return evt
+        return evt

@@ -41,11 +41,19 @@ class EntityEvent:
     def data(self) -> EventData:
         return self._evt_data
 
-    def handle(self):
+    @property
+    def handled(self) -> bool:
+        return self._handled
+
+    @property
+    def prevented(self) -> bool:
+        return self._prevented
+
+    def handle(self) -> None:
         self._handled = True
         self._prevented = True
 
-    def prevent(self):
+    def prevent(self) -> None:
         self._prevented = True
 
     def __eq__(self, other: object) -> bool:

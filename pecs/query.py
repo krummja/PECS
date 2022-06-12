@@ -16,19 +16,19 @@ class Query:
     def __init__(
             self,
             world: World,
-            any_of: Optional[List[ComponentMeta]] = None,
             all_of: Optional[List[ComponentMeta]] = None,
+            any_of: Optional[List[ComponentMeta]] = None,
             none_of: Optional[List[ComponentMeta]] = None,
         ) -> None:
         self._cache = []
         self._world = world
 
-        self.any_of = any_of
         self.all_of = all_of
+        self.any_of = any_of
         self.none_of = none_of
 
-        self._any = reduce(lambda a, b: add_bit(a, b.cbit), self.any_of, 0)
         self._all = reduce(lambda a, b: add_bit(a, b.cbit), self.all_of, 0)
+        self._any = reduce(lambda a, b: add_bit(a, b.cbit), self.any_of, 0)
         self._none = reduce(lambda a, b: add_bit(a, b.cbit), self.none_of, 0)
 
     @property
@@ -43,8 +43,8 @@ class Query:
 
     def matches(self, entity: Entity) -> bool:
         bits = entity.cbits
-        any_of = self._any == 0 or bit_intersection(bits, self._any)
         all_of = bit_intersection(bits, self._all) == self._all
+        any_of = self._any == 0 or bit_intersection(bits, self._any)
         none_of = bit_intersection(bits, self._none) == 0
         return any_of & all_of & none_of
 

@@ -41,6 +41,14 @@ class ComponentMeta(type):
     def comp_id(self) -> str:
         return self._comp_id
 
+    @property
+    def cbit(cls) -> int:
+        return cls._cbit
+
+    @cbit.setter
+    def cbit(cls, value: int) -> None:
+        cls._cbit = value
+
     def __hash__(self) -> int:
         return hash(self._comp_id)
 
@@ -105,6 +113,25 @@ class Component(metaclass=ComponentMeta):
     def serialized(self) -> str:
         return json.dumps({self.comp_id: self.__getstate__()})
 
+    def attach(self, entity: Entity) -> None:
+        self._entity = entity
+        self.on_attached(entity)
+
+    def destroy(self):
+        self.on_destroyed()
+        self._entity = None
+
+    def handle_event(self, evt: EntityEvent) -> Any:
+        self.on_event(evt)
+        try:
+            handler = getattr(self, f"on_{evt.name}")
+            return handler(evt)
+        except AttributeError:
+            return None
+        except Exception:
+            traceback.print_exc(file=sys.stderr)
+            raise
+
     def on_attached(self, entity: Entity) -> None:
         """Callback invoked whenever the component is attached to an entity."""
         pass
@@ -121,22 +148,3 @@ class Component(metaclass=ComponentMeta):
         prefixed with `on_`.
         """
         pass
-
-    def _on_attached(self, entity: Entity) -> None:
-        self._entity = entity
-        self.on_attached(entity)
-
-    def _on_destroyed(self) -> None:
-        self.on_destroyed()
-        self._entity = None
-
-    def _on_event(self, evt: EntityEvent) -> Any:
-        self.on_event(evt)
-        try:
-            handler = getattr(self, f"on_{evt.name}")
-            return handler(evt)
-        except AttributeError:
-            return None
-        except Exception:
-            traceback.print_exc(file=sys.stderr)
-            raise
