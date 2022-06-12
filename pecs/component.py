@@ -43,6 +43,10 @@ class ComponentMeta(type):
     def comp_id(self) -> str:
         return self._comp_id
 
+    @property
+    def allow_multiple(cls) -> bool:
+        return cls._allow_multiple
+
     def __hash__(self) -> int:
         return hash(self._comp_id)
 
@@ -119,7 +123,8 @@ class Component(metaclass=ComponentMeta):
         self.__dict__.update(state)
 
     def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Component):
+        if (not isinstance(other, ComponentMeta) and
+            not isinstance(other, Component)):
             return False
         return self.cbit == other.cbit
 

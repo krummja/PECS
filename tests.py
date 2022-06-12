@@ -5,10 +5,13 @@ import pecs
 import random
 
 
+DEFAULT_MAX_HEALTH = 100
+
+
 class Position(pecs.Component):
     """Representation of an Entity's position."""
 
-    def __init__(self, x: int, y: int) -> None:
+    def __init__(self, x: int = 0, y: int = 0) -> None:
         self.x = x
         self.y = y
 
@@ -27,7 +30,7 @@ class Velocity(pecs.Component):
 class Health(pecs.Component):
     """Representation of an Entity's health."""
 
-    def __init__(self, maximum: int) -> None:
+    def __init__(self, maximum: int = DEFAULT_MAX_HEALTH) -> None:
         self.maximum = maximum
         self.current = maximum
 
@@ -52,6 +55,7 @@ class Attacker(pecs.Component):
         target.fire_event('damage_taken', {
             'damage': self.strength * evt.data.multiplier
         })
+        evt.handle()
 
 
 class IsFrozen(pecs.Component):
@@ -91,7 +95,6 @@ class TestBase(unittest.TestCase):
         return self
 
 
-
 class EntityTests(unittest.TestCase):
 
     def setUp(self):
@@ -105,8 +108,8 @@ class EntityTests(unittest.TestCase):
         self.world = self.ecs.create_world()
 
         self.entity = self.world.create_entity()
-        self.entity.add(Position, { 'x': 10, 'y': 10 })
-        self.entity.add(Health, { 'maximum': 100 })
+        self.entity.add(Position)
+        self.entity.add(Health)
 
         self.entity2 = self.world.create_entity()
         self.entity2.add(Health, { 'maximum': 50 })
@@ -135,7 +138,6 @@ class EntityTests(unittest.TestCase):
         self.assertTrue(zombie[Position].x == 100)
         self.assertTrue(zombie[Health].current == 20)
         self.assertTrue(zombie[Velocity].x == 10)
-        self.assertTrue(zombie['health'].current == 20)
         self.assertTrue(zombie[IsFrozen])
 
     def test_entity_events(self):
@@ -199,6 +201,47 @@ class ComponentTests(TestBase):
 
         entity.remove(Position)
         self.assertFalse(entity.has(Position))
+
+    def test_entity_destroy(self):
+        entity = self.world.create_entity('TEST')
+        entity.add(IsFrozen)
+        self.assertTrue(entity.has(IsFrozen))
+        entity.destroy()
+        self.assertTrue(self.world.get_entity('TEST').is_destroyed)
+        self.assertFalse(entity.has(IsFrozen))
+
+
+class PrefabTests(TestBase):
+
+    def test_prefab_creation(self):
+        self.ecs.prefabs.register({
+            "name": "Test",
+            "components": [
+                {
+                    "type": "Position",
+                    "properties": {
+                        "x": 10,
+                        "y": 10,
+                    }
+                },
+                {
+                    "type": "Health",
+                }
+            ]
+        })
+
+        entity = self.ecs.prefabs.create(self.world, "Test", {
+            "position": {
+                "x": 50,
+                "y": 50,
+            },
+            "health": {
+                "maximum": 200
+            }
+        })
+
+        self.assertTrue(entity[Position].x == 50)
+        self.assertTrue(entity[Health].maximum == 200)
 
 
 if __name__ == '__main__':

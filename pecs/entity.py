@@ -28,11 +28,7 @@ class Entity:
         self._uid = uid
         self._index = 0
 
-    def __getitem__(self, component_class_or_name: ComponentMeta | str) -> Any:
-        if isinstance(component_class_or_name, str):
-            for key, value in self._components.items():
-                if key.comp_id == component_class_or_name.upper():
-                    return value
+    def __getitem__(self, component_class_or_name: ComponentMeta) -> Any:
         return self._components.get(component_class_or_name)
 
     def __str__(self) -> str:
@@ -44,8 +40,8 @@ class Entity:
     def __len__(self) -> int:
         return len(self._components)
 
-    def __iter__(self) -> Entity:
-        return self
+    def __iter__(self) -> OrderedDict[ComponentMeta, Component]:
+        return self._components
 
     def __next__(self):
         if self._index > len(self) - 1:
@@ -87,14 +83,10 @@ class Entity:
             self.candidacy()
 
         else:
-            raise Exception(f"Invalid Component initializer! Aborting.")
+            raise Exception("Invalid Component initializer! Aborting.")
 
-    def get(self, component_class_or_name: ComponentMeta | str) -> Any:
+    def get(self, component_class_or_name: ComponentMeta) -> Any:
         """Get a Component currently attached to this Entity."""
-        if isinstance(component_class_or_name, str):
-            for key, value in self._components.items():
-                if key.comp_id == component_class_or_name.upper():
-                    return value
         return self._components.get(component_class_or_name)
 
     def has(self, component: ComponentMeta) -> bool:

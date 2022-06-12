@@ -1,7 +1,8 @@
 from __future__ import annotations
 from typing import *
 
-from pecs.component import Component
+from deepmerge import always_merger
+from pecs.component import ComponentMeta
 from pecs.entity import Entity
 
 
@@ -9,7 +10,7 @@ class PrefabComponent:
 
     def __init__(
             self,
-            klass: Component,
+            klass: ComponentMeta,
             properties: Optional[Dict[str, Any]] = None,
             overwrite: bool = True
         ) -> None:
@@ -22,4 +23,13 @@ class PrefabComponent:
             entity: Entity,
             initial_props: Optional[Dict[str, Any]] = None
         ) -> None:
-        pass
+        initial_props = initial_props or {}
+
+        if not self.klass.allow_multiple and entity.has(self.klass):
+            if not self.overwrite:
+                return
+            component = entity[self.klass]
+            entity.remove(component)
+
+        props = always_merger.merge(self.properties, initial_props)
+        entity.add(self.klass, props)

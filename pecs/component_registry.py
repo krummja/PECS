@@ -6,7 +6,7 @@ if TYPE_CHECKING:
 
 from collections import OrderedDict
 
-from pecs.component import Component, ComponentMeta
+from pecs.component import ComponentMeta
 
 
 class ComponentRegistry:
@@ -22,7 +22,7 @@ class ComponentRegistry:
         self._map[component_class.comp_id] = component_class
 
     def __getitem__(self, comp_id) -> ComponentMeta:
-        return self._map[comp_id]
+        return self._map[comp_id.upper()]
 
 
 class ComponentLoader:

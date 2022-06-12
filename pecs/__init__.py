@@ -4,6 +4,8 @@ from pecs.entity import Entity
 from pecs.entity_event import EntityEvent, EventData
 from pecs.world import World
 from pecs.query import Query
+from pecs.prefab_entity import PrefabEntity
+from pecs.prefab_component import PrefabComponent
 
 __all__ = [
     'Component',
