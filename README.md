@@ -79,12 +79,19 @@ entity.add(IsFrozen)
 
 ### Queries
 
+The easiest way to build out systems is through world queries. To make a system that tracks and updates the components relevant to movement, we might query for `Position` and `Velocity` components. Because we want our entities to move, we want to exclude those marked with the `IsFrozen` flag. Perhaps we also want to grab only those entities that can fly through `Wings` or swim through `Fins`: 
+
 ```python
 kinematics = world.create_query(
-    all_of = [Position, Velocity],
+     all_of = [Position, Velocity],
+     any_of = [Wings, Fins],
     none_of = [IsFrozen],
 )
 ```
+
+Queries can specify `all_of`, `any_of`, or `none_of` quantifiers. The query in the example above asks for entities that must have **both** `Position` **and** `Velocity`, may have **either** `Wings` **or** `Fins`, and **must not** have `IsFrozen`.
+
+We can access the result set of the query and do some operation on them every loop cycle:
 
 ```python
 def process(dt):
@@ -95,27 +102,44 @@ def process(dt):
 
 ### Broadcasting Events to Components
 
-```python
-class Legs(pecs.Component):
-
-    def on_try_move(self, evt: EntityEvent) -> None:
-        pass        
-```
-
-## Notes & Ideas
-
-- Create a context manager for a component's owning entity, similar to the way the Request object is used in Flask:
-
+Complex interactions within and among entities can be achieved by firing events on an entity. This creates an `EntityEvent` that looks for methods on all of the entity's methods prefixed with `on_`.
 
 ```python
-from pecs import entity
-
-class Legs(pecs.Component):
-
-    def on_try_move(self, evt: EntityEvent) -> None:
-        if self.is_blocked(*evt.data.target):
-            if entity[Position].surrounding.is_interactable(*evt.data.target):
-                entity.fire_event('try_interact', evt.data)
+zombie.fire_event('attack', {
+    'target': survivor,
+    'multiplier': 1.5
+})
 ```
 
-The `entity` object would get its specific value from the context of the method when it's called as part of event listening.
+On the `zombie` entity, we might have attached an `Attacker` component with the following logic:
+
+```python
+class Attacker(pecs.Component):
+
+    def __init__(self, strength: int) -> None:
+        self.strength = strength
+
+    def on_attack(self, evt: pecs.EntityEvent) -> pecs.EntityEvent:
+        target = evt.data.target
+        target.fire_event('damage_taken', {
+            'amount': self.strength * evt.data.multiplier
+        })
+        evt.handle()
+```
+
+When we execute `fire_event` with the event name `attack`, the event system will find all `on_attack` methods on that entity's components. If we want the event propagation to stop at a particular component, we can call `evt.handle()` which will immediately break broadcasting down the component list.  
+
+Internally, the `EntityEvent` class puts together an instance of the class `EventData`, which provides access to the properties defined in the `fire_event` call.
+
+```python
+import pecs
+
+zombie.fire_event('attack', {
+    'target': survivor,                 # <-- We defined 'target' here
+    'multiplier': 1.5                   # <-- and 'multiplier' here
+})
+
+def on_attack(self, evt: pecs.EntityEvent) -> pecs.EntityEvent:
+    target = evt.data.target            # --> survivor
+    multiplier = evt.data.multiplier    # --> 1.5
+```
