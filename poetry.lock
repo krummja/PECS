@@ -1,0 +1,18 @@
+[[package]]
+name = "deepmerge"
+version = "1.0.1"
+description = "a toolset to deeply merge python dictionaries."
+category = "main"
+optional = false
+python-versions = "*"
+
+[metadata]
+lock-version = "1.1"
+python-versions = "^3.10"
+content-hash = "fef2bf8540a453cfb005af2d178cd590561e150fbf2348b58879d887fe1b7e09"
+
+[metadata.files]
+deepmerge = [
+    {file = "deepmerge-1.0.1-py3-none-any.whl", hash = "sha256:f851fff957697cb8f4580b465acf5c2d35841695306ff0abb9cb9c273ad76112"},
+    {file = "deepmerge-1.0.1.tar.gz", hash = "sha256:4b44779ed3d2fb791bb181fc2683423496fea428abb7af37feb23286de7f0a1a"},
+]

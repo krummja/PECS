@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pecs-framework"
-version = "1.0.2"
+version = "1.0.4"
 description = "The ✨Respectably Muscled✨ Python Entity Component System"
 authors = ["Jonathan Crum <crumja4@gmail.com>"]
 readme = 'README.md'
@@ -20,8 +20,8 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.10"
-deepmerge = "^1.0.1"
+python = "3.8 || 3.9 || ^3.10"
+deepmerge = "1.0.1"
 
 [tool.poetry.dev-dependencies]
 
