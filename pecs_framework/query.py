@@ -2,13 +2,13 @@ from __future__ import annotations
 from typing import *
 
 if TYPE_CHECKING:
-    from pecs.entity import Entity
-    from pecs.world import World
+    from pecs_framework.entity import Entity
+    from pecs_framework.world import World
 
 from functools import reduce
 
-from pecs.component import ComponentMeta
-from pecs.helpers import *
+from pecs_framework.component import ComponentMeta
+from pecs_framework.helpers import *
 
 
 ComponentQuery = List[ComponentMeta]

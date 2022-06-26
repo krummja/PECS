@@ -4,10 +4,10 @@ from typing import *
 if TYPE_CHECKING:
     pass
 
-from pecs.component import ComponentMeta
-from pecs.world import World
-from pecs.component_registry import ComponentRegistry
-from pecs.prefab_registry import PrefabRegistry
+from pecs_framework.component import ComponentMeta
+from pecs_framework.world import World
+from pecs_framework.component_registry import ComponentRegistry
+from pecs_framework.prefab_registry import PrefabRegistry
 
 
 class Engine:

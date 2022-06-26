@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import unittest
-import pecs
+import pecs_framework as pecs
 import random
 
 DEFAULT_MAX_HEALTH = 100

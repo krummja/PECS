@@ -2,8 +2,8 @@ from __future__ import annotations
 from typing import *
 
 from deepmerge import always_merger
-from pecs.component import ComponentMeta
-from pecs.entity import Entity
+from pecs_framework.component import ComponentMeta
+from pecs_framework.entity import Entity
 
 
 class PrefabComponent:

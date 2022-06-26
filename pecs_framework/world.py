@@ -2,14 +2,14 @@ from __future__ import annotations
 from typing import *
 
 if TYPE_CHECKING:
-    from pecs.engine import Engine
-    from pecs.query import Query, ComponentQuery
+    from pecs_framework.engine import Engine
+    from pecs_framework.query import Query, ComponentQuery
 
 from uuid import uuid1
 from collections import OrderedDict
 
-from pecs.entity import Entity
-from pecs.query import Query
+from pecs_framework.entity import Entity
+from pecs_framework.query import Query
 
 
 class World:

@@ -28,7 +28,7 @@ pip install git+https://github.com/krummja/PECS
 To start flexing your PECS, import the library and set up some components.
 
 ```python
-import pecs
+import pecs_framework as pecs
 
 
 class Position(pecs.Component):
@@ -133,8 +133,6 @@ When we execute `fire_event` with the event name `attack`, the event system will
 Internally, the `EntityEvent` class puts together an instance of the class `EventData`, which provides access to the properties defined in the `fire_event` call.
 
 ```python
-import pecs
-
 zombie.fire_event('attack', {
     'target': survivor,                 # <-- We defined 'target' here
     'multiplier': 1.5                   # <-- and 'multiplier' here

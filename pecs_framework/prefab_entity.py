@@ -1,8 +1,8 @@
 from __future__ import annotations
 from typing import *
 
-from pecs.entity import Entity
-from pecs.prefab_component import PrefabComponent
+from pecs_framework.entity import Entity
+from pecs_framework.prefab_component import PrefabComponent
 
 
 class PrefabEntity:

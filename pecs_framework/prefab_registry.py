@@ -2,12 +2,12 @@ from __future__ import annotations
 from typing import *
 
 if TYPE_CHECKING:
-    from pecs.engine import Engine
-    from pecs.entity import Entity
-    from pecs.world import World
+    from pecs_framework.engine import Engine
+    from pecs_framework.entity import Entity
+    from pecs_framework.world import World
 
-from pecs.prefab_entity import PrefabEntity
-from pecs.prefab_component import PrefabComponent
+from pecs_framework.prefab_entity import PrefabEntity
+from pecs_framework.prefab_component import PrefabComponent
 
 
 class PrefabRegistry:

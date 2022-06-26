@@ -1,7 +1,30 @@
-[build-system]
-requires = ['setuptools', 'wheel', 'setuptools_scm[toml]']
-build-backend = 'setuptools.build_meta'
+[tool.poetry]
+name = "pecs-framework"
+version = "1.0.2"
+description = "The ✨Respectably Muscled✨ Python Entity Component System"
+authors = ["Jonathan Crum <crumja4@gmail.com>"]
+readme = 'README.md'
+repository = 'https://github.com/krummja/PECS'
+classifiers = [
+    'License :: OSI Approved :: MIT License',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python :: Implementation :: CPython'
+]
+include = [
+    "README.md",
+    "LICENSE.txt"
+]
 
-[tool.setuptools_scm]
-write_to = "pecs/version.py"
-write_to_template = "__version__ = '{version}'"
+[tool.poetry.dependencies]
+python = "^3.10"
+deepmerge = "^1.0.1"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

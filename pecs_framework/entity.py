@@ -2,12 +2,12 @@ from __future__ import annotations
 from typing import *
 
 if TYPE_CHECKING:
-    from pecs.engine import Engine
+    from pecs_framework.engine import Engine
 
 from collections import OrderedDict
-from pecs.helpers import *
-from pecs.component import Component, ComponentMeta
-from pecs.entity_event import EntityEvent, EventData
+from pecs_framework.helpers import *
+from pecs_framework.component import Component, ComponentMeta
+from pecs_framework.entity_event import EntityEvent, EventData
 
 
 def remove_component(entity: Entity, component: ComponentMeta) -> None:

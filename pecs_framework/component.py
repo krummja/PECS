@@ -2,8 +2,8 @@ from __future__ import annotations
 from typing import *
 
 if TYPE_CHECKING:
-    from pecs.entity import Entity
-    from pecs.entity_event import EntityEvent
+    from pecs_framework.entity import Entity
+    from pecs_framework.entity_event import EntityEvent
 
 import json
 import sys

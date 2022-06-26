@@ -2,11 +2,11 @@ from __future__ import annotations
 from typing import *
 
 if TYPE_CHECKING:
-    from pecs.engine import Engine
+    from pecs_framework.engine import Engine
 
 from collections import OrderedDict
 
-from pecs.component import ComponentMeta
+from pecs_framework.component import ComponentMeta
 
 
 class ComponentRegistry:
