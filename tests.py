@@ -288,10 +288,6 @@ def profile_testing():
                 'target': pacifist,
             })
 
-def run():
-    import cProfile
-    cProfile.run('profile_testing()')
-
 
 if __name__ == '__main__':
-    run()
+    unittest.main()

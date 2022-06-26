@@ -143,3 +143,14 @@ def on_attack(self, evt: pecs.EntityEvent) -> pecs.EntityEvent:
     target = evt.data.target            # --> survivor
     multiplier = evt.data.multiplier    # --> 1.5
 ```
+
+Actions can also be defined as a tuple and passed into the `fire_event` method. This allows for easy abstraction over variables used in the event:
+
+```python
+attack_against = (lambda target : ('attack', {
+    'target': target,
+    'multiplier': 1.5
+}))
+
+zombie.fire_event(attack_against(survivor))
+```

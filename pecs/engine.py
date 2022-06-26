@@ -5,7 +5,6 @@ if TYPE_CHECKING:
     pass
 
 from pecs.component import ComponentMeta
-
 from pecs.world import World
 from pecs.component_registry import ComponentRegistry
 from pecs.prefab_registry import PrefabRegistry
