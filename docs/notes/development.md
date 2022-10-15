@@ -1,9 +1,11 @@
 ---
-id: yrgz2s326399vwqhjmk7acj
+id: ah47o2qlsfg6d6aws4345x9
 title: Development
 desc: ''
-updated: 1665855236192
-created: 1665855223291
+updated: 1665877010562
+created: 1665877005664
 ---
 
-These are my general notes for the development of the PECS Framework.
+Development notes for PECS
+
+
