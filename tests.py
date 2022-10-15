@@ -290,4 +290,9 @@ def profile_testing():
 
 
 if __name__ == '__main__':
-    unittest.main()
+    import timeit
+    # unittest.main()
+
+    print(timeit.timeit('profile_testing()', number=1, globals = globals()))
+
+
