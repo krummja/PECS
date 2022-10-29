@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import *
+from typing import TYPE_CHECKING, Type, Tuple, Any, Optional, Callable
 
 if TYPE_CHECKING:
     from pecs_framework.entity import Entity
@@ -21,19 +21,19 @@ IGNORED_ATTRIBUTES = [
 
 class ComponentMeta(type):
 
-    cbit: int
     entity: Entity
 
     _comp_id: str
     _allow_multiple: bool
+    _cbit: int
 
     def __new__(
-            mcs: Type[ComponentMeta],
+            cls: Type[ComponentMeta],
             clsname: str,
             bases: Tuple[type, ...],
             namespace: Any
         ) -> ComponentMeta:
-        clsobj = super().__new__(mcs, clsname, bases, namespace)
+        clsobj = super().__new__(cls, clsname, bases, namespace)
         clsobj._comp_id = str(clsname).upper()
         clsobj._allow_multiple = False
         clsobj._cbit = 0
@@ -46,6 +46,14 @@ class ComponentMeta(type):
     @property
     def allow_multiple(cls) -> bool:
         return cls._allow_multiple
+    
+    @property
+    def cbit(cls) -> int:
+        return cls._cbit
+    
+    @cbit.setter
+    def cbit(cls, value: int) -> None:
+        cls._cbit = value
 
     def __hash__(self) -> int:
         return hash(self._comp_id)
@@ -114,7 +122,7 @@ class Component(metaclass=ComponentMeta):
         for symbol in dir(self):
             if symbol[0] != "_" and symbol not in IGNORED_ATTRIBUTES:
                 attr = getattr(self, symbol)
-                if not isinstance(attr, Callable):
+                if not callable(attr):
                     state[symbol] = attr
         return json.dumps(state)
 

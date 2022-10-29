@@ -6,6 +6,7 @@ if TYPE_CHECKING:
     from pecs_framework.entity import Entity
     from pecs_framework.world import World
 
+import json
 from pecs_framework.prefab_entity import PrefabEntity
 from pecs_framework.prefab_component import PrefabComponent
 
@@ -22,7 +23,12 @@ class PrefabRegistry:
         Definitions come in the form of dicts, either directly from code or
         from deserialized JSON definition files.
         """
-        prefab = self.unpack_definition(data)
+        if isinstance(data, str):
+            _data = json.loads(data)
+        else:
+            _data = data
+            
+        prefab = self.unpack_definition(_data)
         self._prefabs[prefab.name] = prefab
 
     def serialize(self, data: Dict[str, Any]) -> str:
@@ -32,6 +38,8 @@ class PrefabRegistry:
         pass
 
     def unpack_definition(self, data: Dict[str, Any]) -> PrefabEntity:
+        assert data is not None, "Definition must be defined to unpack!"
+        
         registered = self.get(data["name"])
         if registered:
             return registered
@@ -40,6 +48,7 @@ class PrefabRegistry:
 
         inherit: List[str] = []
 
+        # TODO: Use TypedDict to handle the typing weirdness here.
         if isinstance(data.get("inherit"), list):
             inherit = data.get("inherit")
         elif isinstance(data.get("inherit"), str):

@@ -10,8 +10,8 @@ class PrefabEntity:
     def __init__(
             self,
             name: str,
-            inherit: list[PrefabEntity] = None,
-            components: list[PrefabComponent] = None,
+            inherit: list[PrefabEntity] | None = None,
+            components: list[PrefabComponent] | None = None,
         ) -> None:
         self.name = name
         self.inherit = inherit or []

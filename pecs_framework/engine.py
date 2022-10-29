@@ -1,8 +1,4 @@
 from __future__ import annotations
-from typing import *
-
-if TYPE_CHECKING:
-    pass
 
 from pecs_framework.component import ComponentMeta
 from pecs_framework.world import World
