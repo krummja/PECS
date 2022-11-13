@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     pass
 
 import timeit
-import pecs_framework as pecs
+import attic.numpy_tests as pecs
 
 
 class ContactData(pecs.Component):

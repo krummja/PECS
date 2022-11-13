@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import unittest
-import pecs_framework as pecs
+import attic.numpy_tests as pecs
 import random
 
 DEFAULT_MAX_HEALTH = 100
@@ -291,7 +291,7 @@ def profile_testing():
 
 if __name__ == '__main__':
     import timeit
-    # unittest.main()
+    unittest.main()
 
     print(timeit.timeit('profile_testing()', number=1, globals = globals()))
 
