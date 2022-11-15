@@ -4,9 +4,10 @@ from beartype.typing import *
 from uuid import uuid1
 from collections import OrderedDict
 
-
 if TYPE_CHECKING:
-    from pecs_framework.engine import Engine
+    from pecs_framework._types import IdStr
+    from pecs_framework.engine import Engine, CInst
+    from pecs_framework.component import Component
     
 from pecs_framework.entity import Entity
 
@@ -19,10 +20,10 @@ class Domain:
     
     def __init__(self, engine: Engine) -> None:
         self.engine = engine
-        self.entities = OrderedDict()
+        self.entities: dict[IdStr, Entity] = OrderedDict()
         self.queries = OrderedDict()
         self.aliases = OrderedDict()
-        
+    
     def get_entity_id(self, entity_or_alias: Entity | str) -> str:
         """
         Get an Entity's identifier either by passing the entity itself or its
@@ -96,8 +97,11 @@ class Domain:
         """
         entity_id: str = self.aliases.get(alias, '')
         if entity_id:
-            entity: Entity = self.entities[entity_id]
+            entity: Entity = self.get_entity_by_id(entity_id)
         else:
             self.create_entity(alias)
             entity: Entity = self.get_entity_by_alias(alias)
         return entity
+
+    def get_entity_by_id(self, entity_id: str) -> Entity:
+        return self.entities[entity_id]

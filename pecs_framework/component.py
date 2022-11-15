@@ -1,22 +1,17 @@
 from __future__ import annotations
-from beartype import beartype
 from beartype.typing import *
-from beartype.vale import Is
-from typing import Annotated, TypeAlias
 
+if TYPE_CHECKING:
+    from pecs_framework.entity import Entity
 
-HasComponentID = Is[lambda cls: hasattr(cls, '__component_id__')]
-Component_ = Annotated[type, HasComponentID]
-IdStr = Annotated[str, Is[lambda id_str: id_str == id_str.upper()]]
-
-Bases: TypeAlias = tuple[type, ...]
-Namespace: TypeAlias = dict[str, Any]
+from pecs_framework._types import Bases, Namespace
 
 
 class ComponentMeta(type):
     """Base Component Metaclass"""
     comp_id: str
     cbits: int
+    entity: Entity
     
     def __new__(
             mcs: Type[ComponentMeta], 

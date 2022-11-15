@@ -4,7 +4,7 @@ from beartype.typing import *
 from collections import OrderedDict
 
 if TYPE_CHECKING:
-    from pecs_framework.component import IdStr
+    from pecs_framework._types import IdStr
 
 from pecs_framework.utils import *
 from pecs_framework.component import Component
@@ -47,9 +47,15 @@ class Accessor(Generic[CInst]):
 class Engine:
     
     def __init__(self) -> None:
-        self.domain = Domain(self)
+        self.current_domain = Domain(self)
+        self.domains = {}
         self.components = ComponentRegistry(self)
-        
+
+    def create_domain(self, domain_name: str) -> Domain:
+        self.domains[domain_name] = Domain(self)
+        self.current_domain = self.domains[domain_name]
+        return self.current_domain
+     
     def get_component(self, component_name: str) -> type[CInst]:
         """
         Get a Component type from the ECS Component Registry by its component
@@ -102,9 +108,9 @@ class Engine:
         ```
         """
         if isinstance(entity, str):
-            entity_: Entity = self.domain.get_entity_by_alias(entity)
+            entity_: Entity = self.current_domain.get_entity_by_alias(entity)
         else:
-            entity_: Entity = self.domain.entities[entity.eid]
+            entity_: Entity = self.current_domain.entities[entity.eid]
         
         key = component.comp_id
         properties_ = properties if properties else {}
@@ -133,9 +139,9 @@ class Engine:
         ```
         """
         if isinstance(entity, str):
-            entity_: Entity = self.domain.get_entity_by_alias(entity)
+            entity_: Entity = self.current_domain.get_entity_by_alias(entity)
         else:
-            entity_: Entity = self.domain.entities[entity.eid]
+            entity_: Entity = self.current_domain.entities[entity.eid]
 
         key = component.classtype.comp_id
         cbit = component.classtype.cbits
