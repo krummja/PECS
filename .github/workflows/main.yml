@@ -2,6 +2,7 @@ name: Tests
 on: [push, pull_request]
 jobs:
   build:
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: [3.8, 3.9, 3.10-dev, 3.11]
@@ -28,6 +29,7 @@ jobs:
 
   coveralls_finish:
     needs: build
+    runs-on: ubuntu-latest
     steps:
       - name: Coveralls Finished
         uses: AndreMiras/coveralls-python-action@v20201129
