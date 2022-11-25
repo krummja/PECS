@@ -131,3 +131,5 @@ dmypy.json
 # Others
 .vscode/
 .idea/
+attic/
+docs/
