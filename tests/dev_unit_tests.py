@@ -396,9 +396,3 @@ def test_deserialization(ecs: Engine):
 # TODO
 def test_adhoc_data_component(ecs: Engine):
     pass
-
-
-if __name__ == '__main__':
-    # ecs()
-    # test_component_attachment(ecs())
-    test_entity_events(ecs())
