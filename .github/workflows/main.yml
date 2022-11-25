@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.8, 3.9, 3.10, 3.11]
+        python-version: [3.8, 3.9, 3.10-dev]
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
@@ -18,7 +18,7 @@ jobs:
         pip install --upgrade setuptools setuptools_scm pep517 coveralls
         pip install -r requirements.txt
         pip install .
-        coverage run --source pecs_framework tests/dev_unit_tests.py
+        coverage run --source pecs_framework tests.py
         coverage report -m
     - name: Coveralls Python
       uses: AndreMiras/coveralls-python-action@v20201129

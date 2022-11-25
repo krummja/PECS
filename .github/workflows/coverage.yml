@@ -4,7 +4,7 @@ jobs:
   build:
     strategy:
       matrix:
-        python-version: [3.8, 3.9, 3.10, 3.11]
+        python-version: [3.8, 3.9, 3.10-dev, 3.11]
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
@@ -19,6 +19,6 @@ jobs:
         pip install coveralls
     - name: Coveralls Python
       script:
-      - pytest --cov=tests/dev_unit_tests.py
+      - pytest tests/dev_unit_tests.py
       after_success:
       - coveralls
