@@ -17,8 +17,19 @@ jobs:
         pip install pytest
         pip install pytest-cov
         pip install coveralls
+        pip install .
+        coverage run --source pecs_framework tests/dev_unit_tests.py
+        coverage report -m
     - name: Coveralls Python
-      script:
-      - pytest tests/dev_unit_tests.py
-      after_success:
-      - coveralls
+      uses: AndreMiras/coveralls-python-action@v20201129
+      with:
+        parallel: true
+        flag-name: test-${{ matrix.python-version }}
+
+  coveralls_finish:
+    needs: build
+    steps:
+      - name: Coveralls Finished
+        uses: AndreMiras/coveralls-python-action@v20201129
+        with:
+          parallel-finished: true
