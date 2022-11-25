@@ -1,28 +1,37 @@
 from __future__ import annotations
 from beartype.typing import *
 
-from uuid import uuid1
+from uuid import uuid1, UUID
 from collections import OrderedDict
 
 if TYPE_CHECKING:
-    from pecs_framework._types import IdStr
-    from pecs_framework.engine import Engine, CInst
+    from pecs_framework._types import CompId, Alias
+    from pecs_framework.engine import Engine
     from pecs_framework.component import Component
+    from pecs_framework.query import ComponentQuery
     
 from pecs_framework.entity import Entity
+from pecs_framework.query import Query
 
 
-class Domain:
-    
-    @staticmethod
-    def create_uid() -> str:
-        return str(uuid1())
-    
-    def __init__(self, engine: Engine) -> None:
-        self.engine = engine
-        self.entities: dict[IdStr, Entity] = OrderedDict()
-        self.queries = OrderedDict()
+class EntityRegistry:
+
+    def __init__(self, domain: Domain) -> None:
+        self.domain = domain
         self.aliases = OrderedDict()
+        self._map: dict[str, Entity] = OrderedDict()
+
+    def __getitem__(self, key: str) -> Entity:
+        return self._map[key]
+
+    def __setitem__(self, key: str, entity: Entity) -> None:
+        self._map[key] = entity
+
+    def keys(self):
+        return self._map.keys()
+
+    def values(self):
+        return self._map.values()
     
     def get_entity_id(self, entity_or_alias: Entity | str) -> str:
         """
@@ -44,24 +53,7 @@ class Domain:
             id_: str = entity_or_alias.eid
         return id_
     
-    def get_cbits(self, entity_or_alias: Entity | str) -> int:
-        """
-        Get the cbits for a specific Entity.
-
-        Parameters
-        ----------
-        entity_or_alias
-            An Entity instance or a string alias to an Entity
-
-        Returns
-        -------
-            The cbit state of the target Entity
-        """
-        if isinstance(entity_or_alias, str):
-            return self.get_entity_by_alias(entity_or_alias).cbits
-        return entity_or_alias.cbits
-    
-    def create_entity(self, alias: str | None = None) -> Entity:
+    def create(self, alias: str | None = None) -> Entity:
         """
         Create a new Entity in the engine's Entity registry.
 
@@ -74,15 +66,17 @@ class Domain:
         -------
             The newly created Entity instance
         """
-        entity = Entity(self.create_uid())
-        self.entities[entity.eid] = entity
+        entity = Entity(self.domain, self.domain.create_uid())
+        self._map[entity.eid] = entity
         
         if alias:
+            if alias in self.aliases.keys():
+                raise KeyError(f"Entity already exists with alias {alias}")
             self.aliases[alias] = entity.eid
-            
+
         return entity
 
-    def get_entity_by_alias(self, alias: str) -> Entity:
+    def get_by_alias(self, alias: str) -> Entity:
         """
         Get a specific Entity instance via its alias, if it has one.
 
@@ -97,11 +91,53 @@ class Domain:
         """
         entity_id: str = self.aliases.get(alias, '')
         if entity_id:
-            entity: Entity = self.get_entity_by_id(entity_id)
+            return self.get_by_id(entity_id)
         else:
-            self.create_entity(alias)
-            entity: Entity = self.get_entity_by_alias(alias)
-        return entity
+            self.create(alias)
+            return self.get_by_alias(alias)
 
-    def get_entity_by_id(self, entity_id: str) -> Entity:
-        return self.entities[entity_id]
+    def get_by_id(self, entity_id: str) -> Entity:
+        return self._map[entity_id]
+
+    def remove_entity_by_id(self, entity_id: str) -> None:
+        self._map[entity_id]._on_entity_destroyed()
+        del self._map[entity_id]
+
+    def remove_entity_by_alias(self, alias: str) -> None:
+        entity_id = self.get_entity_id(alias)
+        self.remove_entity_by_id(entity_id)
+
+
+class Domain:
+    
+    @staticmethod
+    def create_uid() -> str:
+        return str(uuid1())
+    
+    def __init__(self, engine: Engine) -> None:
+        self.engine = engine
+        self.entities = EntityRegistry(self)
+        self.queries: List[Query] = []
+
+    def destroy_entity(self, entity: Entity | str) -> None:
+        if isinstance(entity, str):
+            if entity in self.entities.keys():
+                self.entities.remove_entity_by_id(entity)
+            else:
+                self.entities.remove_entity_by_alias(entity)
+        else:
+            self.entities.remove_entity_by_id(entity.eid)
+
+    def create_query(
+            self,
+            all_of: ComponentQuery | None = None,
+            any_of: ComponentQuery | None = None,
+            none_of: ComponentQuery | None = None,
+        ) -> Query:        
+        query = Query(self, all_of, any_of, none_of)
+        self.queries.append(query)
+        return query
+
+    def candidate(self, entity: Entity) -> None:
+        for query in self.queries:
+            query.candidate(entity)

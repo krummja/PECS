@@ -4,148 +4,147 @@ from beartype.typing import *
 from collections import OrderedDict
 
 if TYPE_CHECKING:
-    from pecs_framework._types import IdStr
+    from pecs_framework._types import CompId
 
 from pecs_framework.utils import *
-from pecs_framework.component import Component
-from pecs_framework.domain import Domain, Entity
-from pecs_framework.component import ComponentMeta
-
-
-CInst = TypeVar("CInst", bound=Component)
+from pecs_framework.component import ComponentMeta, Component
+from pecs_framework.domain import Domain, EntityRegistry
+from pecs_framework.entity import Entity
+from pecs_framework.entity import (
+    has_component, 
+    add_component,
+    add_component_type,
+    remove_component,
+)
 
 
 class ComponentRegistry:
     
     def __init__(self, engine: Engine) -> None:
         self._engine = engine
-        self._cbits = 1
-        self._map: OrderedDict[IdStr, ComponentMeta] = OrderedDict()
+        self._cbits = 0
+        self._map: OrderedDict[CompId, ComponentMeta] = OrderedDict()
         
     @beartype
     def register(self, component: ComponentMeta) -> None:
         key = component.__name__.upper()
-        component.cbits = self._cbits
+        component.cbit = self._cbits
         self._map[key] = component
         self._cbits += 1
 
-    def get(self, key: str) -> type[CInst]:
-        _key: IdStr = key.upper()
-        return cast(type[CInst], self._map[_key])
+    @beartype
+    def get_type(self, key: ComponentMeta | str) -> type[Component]:
+        if isinstance(key, str):
+            _key: CompId = key.upper()
+        else:
+            _key = key.comp_id
+        return cast(type[Component], self._map[_key])
 
+    @beartype
+    def attach(
+            self, 
+            entity: Entity, 
+            component: ComponentMeta | str | Component,
+            properties: dict[str, Any] | None = None,
+        ) -> None:
+        """
+        Attach a Component to an Entity.
 
-class Accessor(Generic[CInst]):
-    
-    def __init__(self, ecs: Engine, component: type[CInst]) -> None:
-        self._registry = ecs.components
-        self._component = component
+        A Component in this context can be a ComponentType (an uninstantiated
+        Component class), a Component instance, or a string component name.
 
-    def unwrap(self) -> type[CInst]:
-        return self._registry.get(self._component.__name__.upper())
+        Examples
+        --------
+        ```py
+        ecs.components.attach(some_entity, Position(10, 10))
+        ecs.components.attach(some_entity, "health", {"maximum": 150})
+        ecs.components.attach(some_entity, IsFrozen)
+        ```
+
+        Parameters
+        ----------
+        entity
+            The Entity to which this Component will be attached
+        component
+            A ComponentType, Component instance, or a Component name
+        properties, optional
+            A dict of arguments to pass to a Component class, by default None
+        """
+        if isinstance(component, str):
+            component = self._map[component.upper()]
+            
+        if isinstance(component, ComponentMeta):
+            properties_ = properties if properties else {}
+            add_component_type(entity, component, properties_)
+        else:
+            add_component(entity, component)
+
+    @beartype
+    def remove(
+            self, 
+            entity: Entity, 
+            component: ComponentMeta | str | Component
+        ) -> None:
+        if not isinstance(component, ComponentMeta):
+            if isinstance(component, str):
+                component = self._map[component.upper()]
+            else:
+                component = component.__class__
         
+        remove_component(entity, component)
+
+    @beartype
+    def has(self, entity: Entity, component_type: ComponentMeta) -> bool:
+        if not entity:
+            return False
+        return has_component(entity, component_type)
+
 
 class Engine:
     
     def __init__(self) -> None:
-        self.current_domain = Domain(self)
+        """
+        The core ECS engine, providing access to the Domain and 
+        ComponentRegistry objects.
+        """
+        self._domain: Domain
+        self._components: ComponentRegistry
         self.domains = {}
-        self.components = ComponentRegistry(self)
+        self.registries = {}
+
+    @property
+    def domain(self) -> Domain:
+        return self._domain
+
+    @property
+    def entities(self) -> EntityRegistry:
+        return self._domain.entities
+
+    @property
+    def components(self) -> ComponentRegistry:
+        return self._components
 
     def create_domain(self, domain_name: str) -> Domain:
-        self.domains[domain_name] = Domain(self)
-        self.current_domain = self.domains[domain_name]
-        return self.current_domain
-     
-    def get_component(self, component_name: str) -> type[CInst]:
         """
-        Get a Component type from the ECS Component Registry by its component
-        identifier (the name of the Component type).
+        Create a new Domain.
 
         Parameters
         ----------
-        component_name
-            Case-insensitive string identifier of a registered Component type
+        domain_name
+            The name to use as the Domain's primary identifier
 
         Returns
         -------
-            The Component type, if it is registered
-
-        Example
-        -------
-        ```py
-        e1 = ecs.domain.create_entity()
-        position = ecs.get_component('position')(10, 10)
-        ecs.attach_component(e1, position)
-        ```
+            The newly created Domain instance
         """
-        component_ = self.components.get(component_name)
-        return Accessor(self, component_).unwrap()
-    
-    def attach_component_type(
-            self,
-            entity: Entity | str,
-            component: ComponentMeta,
-            properties: dict[str, Any],
-        ) -> None:
-        """
-        Attach a Component type to an Entity. Requires instantiation by
-        additionally passing a dict that maps to the Component kwargs.
+        self.domains[domain_name] = Domain(self)
+        self.registries[domain_name] = ComponentRegistry(self)
+        self._domain = self.domains[domain_name]
+        self._components = self.registries[domain_name]
+        return self.domain
 
-        Parameters
-        ----------
-        entity
-            An Entity instance or a string alias to an Enttity
-        component
-            An uninstantiated Component type
-        properties
-            A dict representing the kwargs of the Component's `__init__`
-            
-        Example
-        -------
-        ```py
-        e1 = ecs.domain.create_entity()
-        ecs.attach_and_initialize_component(e1, Position, {'x': 10, 'y': 0})
-        ```
-        """
-        if isinstance(entity, str):
-            entity_: Entity = self.current_domain.get_entity_by_alias(entity)
-        else:
-            entity_: Entity = self.current_domain.entities[entity.eid]
-        
-        key = component.comp_id
-        properties_ = properties if properties else {}
-        cbit = component.cbits
-        component_ = component(**properties_)
-        
-        entity_.cbits = add_bit(entity_.cbits, cbit)
-        entity_.components[key] = component_
-    
-    def attach_component(self, entity: Entity | str, component: CInst) -> None:
-        """
-        Attach a Component instance to an Entity.
-
-        Parameters
-        ----------
-        entity
-            An Entity instance or a string alias to an Entity
-        component
-            A Component instance
-
-        Example
-        -------
-        ```py
-        e1 = ecs.domain.create_entity()
-        ecs.attach_component(e1, Position(x: 10, y: 0))
-        ```
-        """
-        if isinstance(entity, str):
-            entity_: Entity = self.current_domain.get_entity_by_alias(entity)
-        else:
-            entity_: Entity = self.current_domain.entities[entity.eid]
-
-        key = component.classtype.comp_id
-        cbit = component.classtype.cbits
-        component_ = component
-            
-        entity_.cbits = add_bit(entity_.cbits, cbit)
-        entity_.components[key] = component_
+    def change_domain(self, domain_name: str) -> Domain:
+        domain = self.domains[domain_name]
+        self._domain = self.domains[domain_name]
+        self._components = self.registries[domain_name]
+        return domain

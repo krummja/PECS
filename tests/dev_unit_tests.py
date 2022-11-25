@@ -1,114 +1,360 @@
+from __future__ import annotations
+from beartype.typing import TYPE_CHECKING
+from typing import TypeAlias
+
+if TYPE_CHECKING:
+    from pecs_framework.engine import Engine
+
+import pytest
+from dataclasses import dataclass, field
 from pecs_framework import Engine, Component
-from dataclasses import dataclass
-
-# Instantiate the ECS Engine.
-
-ecs = Engine()
+from pecs_framework import entity as entities
+from pecs_framework.base_system import BaseSystem, Loop
 
 
-# Define a few component classes.
+Color: TypeAlias = tuple[int, int, int]
 
-class Position(Component):  # <-- They are simple classes extending `Component`.
-    
+
+class Position(Component):
+    """Representation of an Entity's position in 2D space."""
     def __init__(self, x: int, y: int) -> None:
         self.x = x
         self.y = y
 
-class Velocity(Component):
-    
-    def __init__(self, x: int, y: int) -> None:
-        self.x = x  # <-- State classes have attributes.
-        self.y = y
+    @property
+    def xy(self) -> tuple[int, int]:
+        return self.x, self.y
 
-# We can define Components as dataclasses as well.
+
+class Velocity(Position):
+    """Representation of an Entity's velocity in 2D space."""
+
 
 @dataclass
 class Renderable(Component):
+    """Representation of an Entity's rendered appearance."""
     ch: str
-    fg: tuple[int, int, int]
-    bg: tuple[int, int, int]
-
-# Flag Components can be created by making empty classes. These simply represent
-# atomic boolean attributes.
-
-class IsPlayer(Component):
-    """Flag"""
+    fg: Color
+    bg: Color
 
 
-# Register the component classes with the ECS Engine.
-
-ecs.components.register(Position)
-ecs.components.register(Velocity)
-ecs.components.register(Renderable)
-ecs.components.register(IsPlayer)
-
-domain = ecs.current_domain
-
-# Now we can make a couple of entities.
-
-e1 = domain.create_entity()
-# Use an alias for easier lookup.
-e2 = domain.create_entity(alias='entity 2')
-e3 = domain.create_entity(alias='player')
+class IsFrozen(Component):
+    """Flag Component denoting an entity with Frozen condition."""
 
 
-# Now we can attach component instances to our entities.
+@dataclass
+class Health(Component):
+    """Representation of an Entity's health."""
+    maximum: int
+    current: int = field(init=False)
 
-ecs.attach_component_type(e1, Position, {'x': 10, 'y': 0})
-ecs.attach_component(e2, ecs.get_component('position')(10, 10))
-ecs.attach_component(e3, ecs.get_component('Position')(1, 1))
-ecs.attach_component(e1, Renderable('@', (255, 0, 255), (0, 0, 0)))
-ecs.attach_component(e3, Velocity(0, 0))
+    def __post_init__(self) -> None:
+        self.current = self.maximum
 
-velocity = ecs.get_component('Velocity')
-ecs.attach_component(e3, velocity(1, 1))
-ecs.attach_component(e3, ecs.get_component('IsPlayer')())
+
+class MovementSystem(BaseSystem):
+
+    def initialize(self) -> None:
+        self.query(
+            'movable', 
+            all_of = [ Position, Velocity ],
+            none_of = [ IsFrozen ],
+        )
+    
+    def update(self) -> None:
+        movables = self._queries['movable'].result
+        for entity in movables:
+            entity[Position].x += entity[Velocity].x
+            entity[Position].y += entity[Velocity].y
+
+
+class MockLoop(Loop):
+
+    def initialize(self) -> None:
+        self.movement_system = MovementSystem(self)
+
+    def teardown(self) -> None:
+        pass
+
+    def pre_update(self) -> None:
+        pass
+
+    def update(self) -> None:
+        for _ in range(20):
+            self.movement_system.update()
+
+    def post_update(self) -> None:
+        pass
 
 
 #! TESTS ======================================================================
+#! ----------------------------------------------------------------------------
 
-def test_entity_creation():
+@pytest.fixture
+def ecs() -> Engine:
+    ecs = Engine()
+
+    domain = ecs.create_domain('World')
+    
+    ecs.components.register(Position)
+    ecs.components.register(Velocity)
+    ecs.components.register(Renderable)
+    ecs.components.register(IsFrozen)
+    ecs.components.register(Health)
+    
+    domain.entities.create('e1')
+    domain.entities.create('e2')
+    domain.entities.create('e3')
+    domain.entities.create('e4')
+    domain.entities.create('e5')
+
+    for i, entity in enumerate(domain.entities.values()):
+        # Note we're using Component name with an initialization dict here.
+        ecs.components.attach(entity, "position", {'x': 10, 'y': 10})
+
+        # Passing a ComponentType with an initialization dict.
+        ecs.components.attach(entity, Velocity, {'x': 1, 'y': 1})
+
+        # In these cases we're passing Component instances. Totally fine!
+        ecs.components.attach(entity, Renderable('@', (255, 0, 255), (0, 0, 0)))
+        ecs.components.attach(entity, Health(100))
+
+        # And finally we're passing a ComponentType to be instantiated on the
+        # entity without arguments.
+        if i > 0:
+            ecs.components.attach(entity, IsFrozen)
+        
+    return ecs
+
+
+#* PASSING
+def test_entity_creation(ecs: Engine):
     """
     Test that the Entity instances we created exist and are accessible via the
     aliases we defined.
     """
-    assert domain.get_entity_by_alias('entity 2') is not None
-    assert domain.get_entity_by_alias('player') is not None
+    domain = ecs.domain
+    e1 = domain.entities.get_by_alias('e1')
+    e2 = domain.entities.get_by_alias('e2')
+    e3 = domain.entities.get_by_alias('e2')
+    e4 = domain.entities.get_by_alias('e2')
+    e5 = domain.entities.get_by_alias('e2')
+    assert all([e1, e2, e3, e4, e5])
 
 
-def test_component_registration():
+#* PASSING
+def test_component_registration(ecs: Engine):
     """
     Test that specific Component types exist in the ECS Engine and that their 
     cbit values are what we expect.
     """
-    position = ecs.get_component('Position')
-    velocity = ecs.get_component('Velocity')
-    is_player = ecs.get_component('IsPlayer')
+    position = ecs.components.get_type('Position')
+    velocity = ecs.components.get_type('Velocity')
+    renderable = ecs.components.get_type('Renderable')
+
+    # Getting by string is not case-sensitive.
+    is_frozen = ecs.components.get_type('isfrozen')
+
+    # Getting can also be done by Component class.
+    health = ecs.components.get_type(Health)
     
-    assert position.cbits == 1
-    assert velocity.cbits == 2
-    assert is_player.cbits == 4
+    assert position.cbit == 0
+    assert velocity.cbit == 1
+    assert renderable.cbit == 2
+    assert is_frozen.cbit == 3
+    assert health.cbit == 4
 
 
-def test_component_attachment():
+#* PASSING
+def test_component_attachment(ecs: Engine):
     """
     Test that our Component attachments were successful by checking that the
     Entities' cbit states correspond to what is expected for the Entity Type.
     """
-    entity = domain.get_entity_by_alias('entity 2')
-    player = domain.get_entity_by_alias('player')
-    
-    # We've only attached a single component, Position, with a __cbits__ value
-    # of 1. This means our expected __cbits__ after attachment is the result of
-    # (entity.__cbits__ | (component.__cbits__ << 1))
-    
-    # entity.__cbits__ = 1
-    # component.__cbits__ = 1
-    # (0 | (1 << 1)) = 2
-    assert entity.cbits == 2
+    domain = ecs.domain
+    e1 = domain.entities.get_by_alias('e1')
+    e2 = domain.entities.get_by_alias('e2')
+    e3 = domain.entities.get_by_alias('e3')
+    e4 = domain.entities.get_by_alias('e4')
+    e5 = domain.entities.get_by_alias('e5')
 
-    # If perform the same test against the 'player' entity, we should get a 
-    # value of 14, since it has all three components attach to it.
+    assert ecs.components.has(e1, Velocity)
+    assert ecs.components.has(e2, IsFrozen)
+    assert ecs.components.has(e3, Health)
+    assert ecs.components.has(e4, Position)
+    assert ecs.components.has(e5, Renderable)
+
+    e1_position: Position = entities.get_component(e1, Position)
+    assert entities.owns_component(e1, e1_position)
+
+
+#* PASSING
+def test_component_instantiation(ecs: Engine):
+    """
+    Test that a Component that is attached to an Entity was instantiated with
+    the correct values.
+    """
+    domain = ecs.domain
+    e1 = domain.entities.get_by_alias('e1')
+    e1_position: Position = entities.get_component(e1, Position)
+    assert e1_position is not None
+    assert e1_position.x == 10
+    assert e1_position.y == 10
     
-    # (((0 | (1 << 1)) | (1 << 2)) | (1 << 3)) = 14
-    assert player.cbits == 22
+    
+#* PASSING
+def test_component_removal(ecs: Engine):
+    """
+    Test that a Component that is attached to an Entity was removed when a
+    Component removal is requested.
+    """
+    domain = ecs.domain
+    e3 = domain.entities.get_by_alias('e3')
+    assert ecs.components.has(e3, Position)
+    ecs.components.remove(e3, Position)
+    assert not ecs.components.has(e3, Position)    
+
+
+#* PASSING
+def test_entity_destruction(ecs: Engine):
+    """
+    Test that an Entity that currently exists in the Domain is destroyed when
+    an Entity destruction is requested.
+    """
+    domain = ecs.domain
+    entity1 = domain.entities.create('delete_1')
+    entity2 = domain.entities.create('delete_2')
+    entity3 = domain.entities.create('delete_3')
+    
+    assert entity1.eid in domain.entities.keys()
+    assert entity2.eid in domain.entities.keys()
+    assert entity3.eid in domain.entities.keys()
+
+    domain.destroy_entity('delete_1')
+    assert entity1.eid not in domain.entities.keys()
+
+    domain.destroy_entity(entity2)
+    assert entity2.eid not in domain.entities.keys()
+
+    domain.destroy_entity(entity3.eid)
+    assert entity3.eid not in domain.entities.keys()
+
+
+#* PASSING
+def test_component_destruction_with_entity(ecs: Engine):
+    """
+    Test that when an Entity is destroyed, all of its attached Components are
+    destroyed as well.
+    """
+    domain = ecs.domain
+    entity = domain.entities.create('entity')
+    ecs.components.attach(entity, Position(10, 10))
+    ecs.components.attach(entity, IsFrozen)
+
+    assert entities.has_component(entity, Position)
+    assert entities.has_component(entity, IsFrozen)
+
+    position = entities.get_component(entity, Position)
+    frozen = entities.get_component(entity, IsFrozen)
+
+    assert position is not None
+    assert frozen is not None
+    domain.destroy_entity(entity)
+
+    assert position.entity_id == ''
+    assert frozen.entity_id == ''
+
+
+# TODO
+def test_on_component_added(ecs: Engine):
+    pass
+
+
+# TODO
+def test_on_component_removed(ecs: Engine):
+    pass
+
+
+#* PASSING
+def test_multidomain(ecs: Engine):
+    """
+    Test the Domain switching feature.
+    """
+    domain = ecs.domain
+    assert domain == ecs.domains['World']
+
+    new_domain = ecs.create_domain('New Domain')
+    assert ecs.domain == new_domain
+
+    domain = ecs.change_domain('World')
+    assert ecs.domain == ecs.domains['World']
+
+
+#* PASSING
+def test_component_query(ecs: Engine):
+    """
+    Test Component querying. This is crucial to system creation and the heart
+    of the ECS core functionality.
+    """
+    domain = ecs.domain
+
+    movable = domain.create_query(
+        all_of = [ 
+            Position, 
+            Velocity,
+        ],
+        none_of = [
+            IsFrozen,
+        ],
+    )
+    assert len(movable.result) == 1
+    
+
+#* PASSING
+def test_system_behavior(ecs: Engine):
+    """
+    Test that a system using a Query can modify the state of Component 
+    instances attached to Entity instances as expected.
+
+    In this case, a single loop will perform 20 ticks. Since the current
+    Velocity component is set to {'x': 1, 'y': 1}, and the starting Position
+    is {'x': 10, 'y': 10}, we expect to see a value of {'x': 30, 'y': 30} after
+    the system has performed its update loop.
+    """
+    domain = ecs.domain    
+    e1 = domain.entities.get_by_alias('e1')
+
+    assert e1[Position].x == 10
+    assert e1[Position].y == 10
+    
+    test_loop = MockLoop(ecs, domain)
+    test_loop.update()
+
+    assert e1[Position].x == 30
+    assert e1[Position].y == 30
+
+
+# TODO
+def test_entity_events(ecs: Engine):
+    pass
+
+
+# TODO
+def test_serialization(ecs: Engine):
+    pass
+
+
+# TODO
+def test_deserialization(ecs: Engine):
+    pass
+
+
+# TODO
+def test_adhoc_data_component(ecs: Engine):
+    pass
+
+
+if __name__ == '__main__':
+    # ecs()
+    # test_component_attachment(ecs())
+    test_component_query(ecs())
