@@ -5,7 +5,6 @@ from collections import OrderedDict
 
 if TYPE_CHECKING:
     from pecs_framework._types import CompId
-    from pecs_framework.engine import Engine
     from pecs_framework.domain import Domain
 
 from pecs_framework.events import EventData, EntityEvent
@@ -41,6 +40,8 @@ class Entity:
         ) -> EntityEvent:
         if data and isinstance(data, EventData):
             data = data.record
+        elif data and isinstance(data, dict):
+            data = EventData(**data).record
         else:
             data = {}
         evt = EntityEvent(event, data)

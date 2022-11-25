@@ -4,12 +4,14 @@ from typing import TypeAlias
 
 if TYPE_CHECKING:
     from pecs_framework.engine import Engine
+    from pecs_framework.entity import Entity
 
 import pytest
 from dataclasses import dataclass, field
 from pecs_framework import Engine, Component
 from pecs_framework import entity as entities
 from pecs_framework.base_system import BaseSystem, Loop
+from pecs_framework.events import EntityEvent, EventData
 
 
 Color: TypeAlias = tuple[int, int, int]
@@ -50,6 +52,24 @@ class Health(Component):
 
     def __post_init__(self) -> None:
         self.current = self.maximum
+
+    def on_damage_taken(self, evt: EntityEvent) -> EntityEvent:
+        damage = evt.data.amount
+        self.current -= damage
+        evt.handle()
+        return evt
+
+@dataclass
+class Attacker(Component):
+    strength: int
+
+    def on_attack(self, evt: EntityEvent) -> EntityEvent:
+        target: Entity = evt.data.target
+        target.fire_event('damage_taken', {
+            'amount': self.strength * evt.data.multiplier,
+        })
+        evt.handle()
+        return evt
 
 
 class MovementSystem(BaseSystem):
@@ -101,6 +121,7 @@ def ecs() -> Engine:
     ecs.components.register(Renderable)
     ecs.components.register(IsFrozen)
     ecs.components.register(Health)
+    ecs.components.register(Attacker)
     
     domain.entities.create('e1')
     domain.entities.create('e2')
@@ -123,6 +144,8 @@ def ecs() -> Engine:
         # entity without arguments.
         if i > 0:
             ecs.components.attach(entity, IsFrozen)
+
+        ecs.components.attach(entity, Attacker(10))
         
     return ecs
 
@@ -334,9 +357,30 @@ def test_system_behavior(ecs: Engine):
     assert e1[Position].y == 30
 
 
-# TODO
 def test_entity_events(ecs: Engine):
-    pass
+    """
+    Test EntityEvent and EventData classes.
+
+    This test is successful in case that an event is fired against an entity's
+    Attacker component, which results in the secondary firing of an event
+    against a target entity's Health component.
+
+    The attacking entity should deal 15 damage to the attacked entity.
+    """
+    domain = ecs.domain
+    e1 = domain.entities.get_by_alias('e1')
+
+    assert e1[Attacker].strength == 10
+
+    e1.fire_event('attack', {
+        'target': domain.entities.get_by_alias('e2'),
+        'multiplier': 1.5,
+    })
+
+    e2 = domain.entities.get_by_alias('e2')
+
+    assert e2[Health].maximum == 100
+    assert e2[Health].current == e2[Health].maximum - 15
 
 
 # TODO
@@ -357,4 +401,4 @@ def test_adhoc_data_component(ecs: Engine):
 if __name__ == '__main__':
     # ecs()
     # test_component_attachment(ecs())
-    test_component_query(ecs())
+    test_entity_events(ecs())
