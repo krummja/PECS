@@ -5,6 +5,7 @@ from collections import OrderedDict
 
 if TYPE_CHECKING:
     from pecs_framework._types import CompId
+    from pecs_framework.loader import Loader
 
 from pecs_framework.utils import *
 from pecs_framework.component import ComponentMeta, Component
@@ -24,10 +25,19 @@ class ComponentRegistry:
         self._engine = engine
         self._cbits = 0
         self._map: OrderedDict[CompId, ComponentMeta] = OrderedDict()
-        
+
+    def load(self, pathspec: str) -> None:
+        if self._engine._loader:
+            loader = self._engine._loader
+            loader.load(pathspec)
+            for component in loader.components:
+                self.register(component)
+
     @beartype
     def register(self, component: ComponentMeta) -> None:
         key = component.__name__.upper()
+        if key in self._map.keys():
+            return
         component.cbit = self._cbits
         self._map[key] = component
         self._cbits += 1
@@ -102,7 +112,7 @@ class ComponentRegistry:
 
 class Engine:
     
-    def __init__(self) -> None:
+    def __init__(self, loader: Loader | None = None) -> None:
         """
         The core ECS engine, providing access to the Domain and 
         ComponentRegistry objects.
@@ -111,6 +121,7 @@ class Engine:
         self._components: ComponentRegistry
         self.domains = {}
         self.registries = {}
+        self._loader = loader
 
     @property
     def domain(self) -> Domain:

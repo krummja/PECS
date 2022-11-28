@@ -4,72 +4,16 @@ from typing import TypeAlias
 
 if TYPE_CHECKING:
     from pecs_framework.engine import Engine
-    from pecs_framework.entity import Entity
 
 import pytest
-from dataclasses import dataclass, field
-from pecs_framework import Engine, Component
+from pecs_framework import Engine
 from pecs_framework import entity as entities
 from pecs_framework.base_system import BaseSystem, Loop
-from pecs_framework.events import EntityEvent, EventData
 
+from .components import *
+from .components import loader
 
-Color: TypeAlias = tuple[int, int, int]
-
-
-class Position(Component):
-    """Representation of an Entity's position in 2D space."""
-    def __init__(self, x: int, y: int) -> None:
-        self.x = x
-        self.y = y
-
-    @property
-    def xy(self) -> tuple[int, int]:
-        return self.x, self.y
-
-
-class Velocity(Position):
-    """Representation of an Entity's velocity in 2D space."""
-
-
-@dataclass
-class Renderable(Component):
-    """Representation of an Entity's rendered appearance."""
-    ch: str
-    fg: Color
-    bg: Color
-
-
-class IsFrozen(Component):
-    """Flag Component denoting an entity with Frozen condition."""
-
-
-@dataclass
-class Health(Component):
-    """Representation of an Entity's health."""
-    maximum: int
-    current: int = field(init=False)
-
-    def __post_init__(self) -> None:
-        self.current = self.maximum
-
-    def on_damage_taken(self, evt: EntityEvent) -> EntityEvent:
-        damage = evt.data.amount
-        self.current -= damage
-        evt.handle()
-        return evt
-
-@dataclass
-class Attacker(Component):
-    strength: int
-
-    def on_attack(self, evt: EntityEvent) -> EntityEvent:
-        target: Entity = evt.data.target
-        target.fire_event('damage_taken', {
-            'amount': self.strength * evt.data.multiplier,
-        })
-        evt.handle()
-        return evt
+from rich import inspect
 
 
 class MovementSystem(BaseSystem):
@@ -110,19 +54,12 @@ class MockLoop(Loop):
 #! TESTS ======================================================================
 #! ----------------------------------------------------------------------------
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def ecs() -> Engine:
-    ecs = Engine()
-
+    ecs = Engine(loader=loader)
     domain = ecs.create_domain('World')
-    
-    ecs.components.register(Position)
-    ecs.components.register(Velocity)
-    ecs.components.register(Renderable)
-    ecs.components.register(IsFrozen)
-    ecs.components.register(Health)
-    ecs.components.register(Attacker)
-    
+    ecs.components.load("tests.components")
+
     domain.entities.create('e1')
     domain.entities.create('e2')
     domain.entities.create('e3')
@@ -151,12 +88,13 @@ def ecs() -> Engine:
 
 
 #* PASSING
-def test_entity_creation(ecs: Engine):
+def test_entity_creation(ecs: Engine, caplog):
     """
     Test that the Entity instances we created exist and are accessible via the
     aliases we defined.
     """
     domain = ecs.domain
+
     e1 = domain.entities.get_by_alias('e1')
     e2 = domain.entities.get_by_alias('e2')
     e3 = domain.entities.get_by_alias('e2')
@@ -171,6 +109,7 @@ def test_component_registration(ecs: Engine):
     Test that specific Component types exist in the ECS Engine and that their 
     cbit values are what we expect.
     """
+    attacker = ecs.components.get_type("Attacker")
     position = ecs.components.get_type('Position')
     velocity = ecs.components.get_type('Velocity')
     renderable = ecs.components.get_type('Renderable')
@@ -180,12 +119,13 @@ def test_component_registration(ecs: Engine):
 
     # Getting can also be done by Component class.
     health = ecs.components.get_type(Health)
-    
-    assert position.cbit == 0
-    assert velocity.cbit == 1
-    assert renderable.cbit == 2
-    assert is_frozen.cbit == 3
-    assert health.cbit == 4
+
+    assert attacker.cbit == 0
+    assert health.cbit == 1
+    assert is_frozen.cbit == 2
+    assert position.cbit == 3
+    assert renderable.cbit == 4
+    assert velocity.cbit == 5
 
 
 #* PASSING
@@ -383,6 +323,11 @@ def test_entity_events(ecs: Engine):
     assert e2[Health].current == e2[Health].maximum - 15
 
 
+#* PASSING
+def test_component_loader(ecs: Engine):
+    assert len(ecs.components._map) == 6
+
+
 # TODO
 def test_serialization(ecs: Engine):
     pass
@@ -394,5 +339,9 @@ def test_deserialization(ecs: Engine):
 
 
 # TODO
-def test_adhoc_data_component(ecs: Engine):
+def test_component_prefab(ecs: Engine):
+    pass
+
+# TODO
+def test_entity_prefab(ecs: Engine):
     pass
