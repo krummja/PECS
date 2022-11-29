@@ -17,6 +17,7 @@ from pecs_framework.entity import (
     add_component_type,
     remove_component,
 )
+from pecs_framework.prefab import PrefabBuilder
 
 
 class ComponentRegistry:
@@ -119,9 +120,11 @@ class Engine:
         """
         self._domain: Domain
         self._components: ComponentRegistry
-        self.domains = {}
-        self.registries = {}
+        self._domains = {}
+        self._registries = {}
+
         self._loader = loader
+        self._prefabs = PrefabBuilder(self)
 
     @property
     def domain(self) -> Domain:
@@ -134,6 +137,10 @@ class Engine:
     @property
     def components(self) -> ComponentRegistry:
         return self._components
+
+    @property
+    def prefabs(self) -> PrefabBuilder:
+        return self._prefabs
 
     def create_domain(self, domain_name: str) -> Domain:
         """
@@ -148,14 +155,14 @@ class Engine:
         -------
             The newly created Domain instance
         """
-        self.domains[domain_name] = Domain(self)
-        self.registries[domain_name] = ComponentRegistry(self)
-        self._domain = self.domains[domain_name]
-        self._components = self.registries[domain_name]
+        self._domains[domain_name] = Domain(self)
+        self._registries[domain_name] = ComponentRegistry(self)
+        self._domain = self._domains[domain_name]
+        self._components = self._registries[domain_name]
         return self.domain
 
     def change_domain(self, domain_name: str) -> Domain:
-        domain = self.domains[domain_name]
-        self._domain = self.domains[domain_name]
-        self._components = self.registries[domain_name]
+        domain = self._domains[domain_name]
+        self._domain = self._domains[domain_name]
+        self._components = self._registries[domain_name]
         return domain

@@ -4,6 +4,7 @@ from typing import TypeAlias
 
 if TYPE_CHECKING:
     from pecs_framework.engine import Engine
+    from pecs_framework.prefab import EntityTemplate, ComponentTemplate
 
 import pytest
 from pecs_framework import Engine
@@ -13,6 +14,7 @@ from pecs_framework.base_system import BaseSystem, Loop
 from .components import *
 from .components import loader
 
+import json
 from rich import inspect
 
 
@@ -244,13 +246,13 @@ def test_multidomain(ecs: Engine):
     Test the Domain switching feature.
     """
     domain = ecs.domain
-    assert domain == ecs.domains['World']
+    assert domain == ecs._domains['World']
 
     new_domain = ecs.create_domain('New Domain')
     assert ecs.domain == new_domain
 
     domain = ecs.change_domain('World')
-    assert ecs.domain == ecs.domains['World']
+    assert ecs.domain == ecs._domains['World']
 
 
 #* PASSING
@@ -335,7 +337,42 @@ def test_serialization(ecs: Engine):
 
 # TODO
 def test_deserialization(ecs: Engine):
-    pass
+    """Test prefab definition unpacking into the correct objects."""
+    domain = ecs.domain
+    prefabs = ecs.prefabs
+
+    definition = json.dumps({
+        "name": "GameObject",
+        "inherit": [],
+        "components": [
+            {
+                "type": "Position",
+            },
+            {
+                "type": "Renderable",
+                "properties": {
+                    "char": "?"
+                }
+            },
+            {
+                "type": "Noun",
+                "properties": {
+                    "text": "<unset>"
+                }
+            }
+        ]  
+    })    
+
+    template: EntityTemplate = prefabs.deserialize(definition)
+
+    assert template['name'] == "GameObject"
+    assert len(template['inherit']) == 0
+    assert len(template['components']) == 3
+
+    components: list[ComponentTemplate] = template['components']
+
+    assert components[0]['component_type'] == "Position"
+    assert components[1]['properties']['char'] == '?'
 
 
 # TODO

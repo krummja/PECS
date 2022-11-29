@@ -1,40 +1,79 @@
 from __future__ import annotations
-from beartype.typing import Any
+from beartype.typing import Any, TypedDict, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pecs_framework.domain import Domain
+    from pecs_framework.engine import Engine
 
 from deepmerge import always_merger
+import json
 
 from pecs_framework.entity import Entity, add_component_type
-from pecs_framework.component import Component
+from pecs_framework.component import Component, ComponentMeta
 
 
-class PrefabComponent:
+# In order to create a prefab, I need to basically automate the process of building
+# out an entity and its component structure based on a TOML or JSON definition.
 
-    def __init__(
-            self, 
-            cls: Component, 
-            properties: dict[str, Any], 
-            overwrite: bool = True,
-        ) -> None:
-        self.component = cls
-        self.properties = properties if properties else {}
-        self.overwrite = overwrite
+# A Prefab is basically just an Entity with attached Components, preconfigured and
+# able to be copied or used as a template for generating new concrete Entity instances.
 
-    def apply(self, entity: Entity, initial_props: dict[str, Any] = None) -> None:
-        if not initial_props:
-            initial_props = {}
+"""
+{
+    "name": "GameObject",
+    "inherit": [],
+    "components": [
+        {
+            "type": "Position",
+        },
+        {
+            "type": "Renderable",
+            "properties": {
+                "char": "?"
+            }
+        },
+        {
+            "type": "Noun",
+            "properties": {
+                "text": "<unset>"
+            }
+        }
+    ]
+}
+"""
 
-        props = always_merger.merge(self.properties, initial_props)
-        add_component_type(entity, self.component, props)
+class ComponentTemplate(TypedDict):
+    component_type: str
+    properties: dict[str, Any]
 
 
-class PrefabEntity:
+class EntityTemplate(TypedDict):
+    name: str
+    inherit: list[str]
+    components: list[ComponentTemplate]
 
-    def __init__(
-            self,
-            name: str,
-            inherit: list[PrefabComponent] = None,
-            components: list[PrefabComponent] = None,
-        ) -> None:
-        self.name = name
-        self.inherit = inherit if inherit else []
-        self.components = components if components else []
+
+class PrefabBuilder:
+
+    def __init__(self, engine: Engine) -> None:
+        self.engine = engine
+        self._templates: dict[str, EntityTemplate] = {}
+
+    def deserialize(self, definition: str) -> EntityTemplate:
+        data = dict(json.loads(definition))
+
+        print(data)
+
+        # Unpack component definitions and set up templates.
+        component_templates = []
+        for definition in data["components"]:
+            component_templates.append({
+                "component_type": definition["type"],
+                "properties": definition.get("properties", {}),
+            })
+
+        return {
+            "name": data["name"],
+            "inherit": data.get("inherit", []),
+            "components": component_templates,
+        }
