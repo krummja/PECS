@@ -335,10 +335,9 @@ def test_serialization(ecs: Engine):
     pass
 
 
-# TODO
+#* PASSING
 def test_deserialization(ecs: Engine):
     """Test prefab definition unpacking into the correct objects."""
-    domain = ecs.domain
     prefabs = ecs.prefabs
 
     definition = json.dumps({
@@ -378,6 +377,7 @@ def test_deserialization(ecs: Engine):
 # TODO
 def test_component_prefab(ecs: Engine):
     pass
+
 
 # TODO
 def test_entity_prefab(ecs: Engine):
