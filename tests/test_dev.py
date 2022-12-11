@@ -1,6 +1,5 @@
 from __future__ import annotations
 from beartype.typing import TYPE_CHECKING
-from typing import TypeAlias
 
 if TYPE_CHECKING:
     from pecs_framework.engine import Engine
@@ -17,7 +16,6 @@ from .components import *
 from .components import loader
 
 import json
-from rich import inspect
 
 
 TEST_DIR = os.path.dirname(__file__)
