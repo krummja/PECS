@@ -45,12 +45,12 @@ class BaseSystem:
         self.initialize()
 
     def query(
-            self, 
-            key: str, 
-            all_of: ComponentQuery | None = None,
-            any_of: ComponentQuery | None = None, 
-            none_of: ComponentQuery | None = None,
-        ) -> None:
+        self, 
+        key: str, 
+        all_of: ComponentQuery | None = None,
+        any_of: ComponentQuery | None = None, 
+        none_of: ComponentQuery | None = None,
+    ) -> None:
         all_of = all_of if all_of else []
         any_of = any_of if any_of else []
         none_of = none_of if none_of else []

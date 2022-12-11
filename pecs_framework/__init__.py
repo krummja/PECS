@@ -9,5 +9,5 @@ __all__ = [
     'Domain',
     'Entity',
     'Engine',
-    "Loader",
+    'Loader',
 ]

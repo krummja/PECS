@@ -1,17 +1,21 @@
 from __future__ import annotations
 from beartype.typing import *
 
-from uuid import uuid1, UUID
+from uuid import uuid1
 from collections import OrderedDict
 
 if TYPE_CHECKING:
-    from pecs_framework._types import CompId, Alias
     from pecs_framework.engine import Engine
-    from pecs_framework.component import Component
     from pecs_framework.query import ComponentQuery
-    
-from pecs_framework.entity import Entity
+    from pecs_framework.prefab import EntityTemplate
+
+from pecs_framework.entities import Entity
 from pecs_framework.query import Query
+from rich.console import Console
+from rich import inspect
+
+
+console = Console()
 
 
 class EntityRegistry:
@@ -76,6 +80,37 @@ class EntityRegistry:
 
         return entity
 
+    def create_from_prefab(
+        self,
+        template: str,
+        properties: dict[str, Any] | None = None,
+        alias: str | None = None,
+    ) -> Entity:
+        entity = self.create(alias)
+        prefabs = self.domain.engine.prefabs
+
+        entity_template: EntityTemplate = prefabs.build_prefab(template)
+        comp_props = prefabs.resolve_overrides(entity_template.components)
+
+        # Gather up keys from our resolved overrides.
+        keys = [key.upper() for key in comp_props.keys()]
+        if properties:
+
+            # Normalize key names from passed properties for matching.
+            properties = {k.upper(): v for k, v in properties.items()}
+
+            # Match against resolved comp_props and update with overrides.
+            for name, prop_block in properties.items():
+                if name in keys:
+                    comp_props[name].update(prop_block)
+
+        # Finally, attach concrete components to the entity, using the resolved
+        # props from the process above.
+        for name, props in comp_props.items():
+            self.domain.engine.components.attach(entity, name, props)
+        
+        return entity
+
     def get_by_alias(self, alias: str) -> Entity:
         """
         Get a specific Entity instance via its alias, if it has one.
@@ -129,11 +164,11 @@ class Domain:
             self.entities.remove_entity_by_id(entity.eid)
 
     def create_query(
-            self,
-            all_of: ComponentQuery | None = None,
-            any_of: ComponentQuery | None = None,
-            none_of: ComponentQuery | None = None,
-        ) -> Query:        
+        self,
+        all_of: ComponentQuery | None = None,
+        any_of: ComponentQuery | None = None,
+        none_of: ComponentQuery | None = None,
+    ) -> Query:        
         query = Query(self, all_of, any_of, none_of)
         self.queries.append(query)
         return query

@@ -27,10 +27,10 @@ class EventData(SimpleNamespace):
 class EntityEvent:
 
     def __init__(
-            self,
-            name: str,
-            payload: dict[str, Any] | None = None,
-        ) -> None:
+        self,
+        name: str,
+        payload: dict[str, Any] | None = None,
+    ) -> None:
         self.name = name
         if payload:
             self._evt_data = EventData(**payload)
