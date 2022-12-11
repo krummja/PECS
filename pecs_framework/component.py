@@ -16,11 +16,11 @@ class ComponentMeta(type):
     _entity_id: str
     
     def __new__(
-            cls: type[ComponentMeta], 
-            clsname: str, 
-            bases: Bases, 
-            namespace: Namespace,
-        ) -> ComponentMeta:
+        cls: type[ComponentMeta], 
+        clsname: str, 
+        bases: Bases, 
+        namespace: Namespace,
+    ) -> ComponentMeta:
         clsobj = super().__new__(cls, clsname, bases, namespace)
         clsobj.comp_id = clsname.upper()
         clsobj.cbit = 0

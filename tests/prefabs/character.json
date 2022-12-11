@@ -1,0 +1,19 @@
+{
+  "name": "Character",
+  "inherit": ["GameObject"],
+  "components": [
+    {
+      "type": "Health",
+      "properties": {
+        "maximum": 100
+      }
+    },
+    {
+      "type": "Renderable",
+      "properties": {
+        "ch": "#",
+        "fg": [255, 255, 255]
+      }
+    }
+  ]
+}

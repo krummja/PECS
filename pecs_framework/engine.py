@@ -10,8 +10,8 @@ if TYPE_CHECKING:
 from pecs_framework.utils import *
 from pecs_framework.component import ComponentMeta, Component
 from pecs_framework.domain import Domain, EntityRegistry
-from pecs_framework.entity import Entity
-from pecs_framework.entity import (
+from pecs_framework.entities import Entity
+from pecs_framework.entities import (
     has_component, 
     add_component,
     add_component_type,
@@ -53,11 +53,11 @@ class ComponentRegistry:
 
     @beartype
     def attach(
-            self, 
-            entity: Entity, 
-            component: ComponentMeta | str | Component,
-            properties: dict[str, Any] | None = None,
-        ) -> None:
+        self, 
+        entity: Entity, 
+        component: ComponentMeta | str | Component,
+        properties: dict[str, Any] | None = None,
+    ) -> None:
         """
         Attach a Component to an Entity.
 
@@ -92,10 +92,10 @@ class ComponentRegistry:
 
     @beartype
     def remove(
-            self, 
-            entity: Entity, 
-            component: ComponentMeta | str | Component
-        ) -> None:
+        self, 
+        entity: Entity, 
+        component: ComponentMeta | str | Component
+    ) -> None:
         if not isinstance(component, ComponentMeta):
             if isinstance(component, str):
                 component = self._map[component.upper()]
@@ -120,11 +120,10 @@ class Engine:
         """
         self._domain: Domain
         self._components: ComponentRegistry
+        self._prefabs: PrefabBuilder
         self._domains = {}
         self._registries = {}
-
         self._loader = loader
-        self._prefabs = PrefabBuilder(self)
 
     @property
     def domain(self) -> Domain:
@@ -159,6 +158,7 @@ class Engine:
         self._registries[domain_name] = ComponentRegistry(self)
         self._domain = self._domains[domain_name]
         self._components = self._registries[domain_name]
+        self._prefabs = PrefabBuilder(self)
         return self.domain
 
     def change_domain(self, domain_name: str) -> Domain:

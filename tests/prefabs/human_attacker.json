@@ -1,0 +1,8 @@
+{
+  "name": "Human Attacker",
+  "inherit": [
+    "Character", 
+    "Combatant"
+  ],
+  "components": []
+}
