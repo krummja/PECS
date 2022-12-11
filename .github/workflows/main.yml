@@ -1,5 +1,5 @@
 name: Tests
-on: [push, pull_request]
+on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,7 +19,7 @@ jobs:
         pip install pytest-cov
         pip install coveralls
         pip install .
-        coverage run --source pecs_framework tests/dev_unit_tests.py
+        coverage run --source pecs_framework tests/test_dev.py
         coverage report -m
     - name: Coveralls Python
       uses: AndreMiras/coveralls-python-action@v20201129
