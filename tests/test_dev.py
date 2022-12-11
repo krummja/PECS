@@ -12,8 +12,8 @@ from pecs_framework import Engine
 from pecs_framework.base_system import BaseSystem, Loop
 from pecs_framework.entities.utils import *
 
-from .components import *
-from .components import loader
+from tests.components import *
+from tests.components import loader
 
 import json
 
