@@ -8,7 +8,7 @@ from pecs_framework.events import EntityEvent
 @dataclass
 class Health(Component):
     """Representation of an Entity's health."""
-    maximum: int
+    maximum: int = 100
     current: int = field(init=False)
 
     def __post_init__(self) -> None:

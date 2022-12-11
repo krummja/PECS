@@ -1,0 +1,19 @@
+{
+  "name": "Player",
+  "inherit": ["Character"],
+  "components": [
+    {
+      "type": "Renderable",
+      "properties": {
+        "ch": "@",
+        "fg": [255, 0, 255]
+      }
+    },
+    {
+      "type": "Noun",
+      "properties": {
+        "text": "PLAYER"
+      }
+    }
+  ]
+}

@@ -3,7 +3,7 @@ from beartype.typing import *
 from typing import TypeAlias
 
 if TYPE_CHECKING:
-    from pecs_framework.entity import Entity
+    from pecs_framework.entities import Entity
     from pecs_framework.domain import Domain
 
 from functools import reduce
@@ -18,18 +18,18 @@ ComponentQuery: TypeAlias = list[ComponentMeta]
 class Query:
 
     def __init__(
-            self,
-            domain: Domain,
-            all_of: ComponentQuery | None = None,
-            any_of: ComponentQuery | None = None,
-            none_of: ComponentQuery | None = None,
-        ) -> None:
+        self,
+        domain: Domain,
+        all_of: ComponentQuery | None = None,
+        any_of: ComponentQuery | None = None,
+        none_of: ComponentQuery | None = None,
+    ) -> None:
         self._domain = domain
 
         all_of = all_of if all_of is not None else []
         any_of = any_of if any_of is not None else []
         none_of = none_of if none_of is not None else []
-        
+
         self._all = reduce(lambda a, b: add_bit(a, b.cbit), all_of, 0)
         self._any = reduce(lambda a, b: add_bit(a, b.cbit), any_of, 0)
         self._none = reduce(lambda a, b: add_bit(a, b.cbit), none_of, 0)

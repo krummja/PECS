@@ -1,0 +1,19 @@
+{
+  "name": "GameObject",
+  "inherit": [],
+  "components": [
+    {
+      "type": "Position"
+    },
+    {
+      "type": "Renderable",
+      "properties": {
+        "ch": "?",
+        "bg": [0, 0, 0]
+      }
+    },
+    {
+      "type": "Noun"
+    }
+  ]
+}
