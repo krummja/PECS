@@ -1,2 +1,4 @@
 deepmerge
 pytest
+rich
+beartype

@@ -7,31 +7,16 @@ jobs:
       matrix:
         python-version: [3.8, 3.9, 3.10-dev, 3.11]
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-    - name: run tests
+    - name: Install dependencies
       run: |
-        pip install --upgrade pip
-        pip install pytest
-        pip install pytest-cov
-        pip install coveralls
+        python -m pip install --upgrade pip
+        pip install pytest pytest-cov coveralls
         pip install .
-        coverage run --source pecs_framework tests/test_dev.py
-        coverage report -m
-    - name: Coveralls Python
-      uses: AndreMiras/coveralls-python-action@v20201129
-      with:
-        parallel: true
-        flag-name: test-${{ matrix.python-version }}
-
-  coveralls_finish:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Coveralls Finished
-        uses: AndreMiras/coveralls-python-action@v20201129
-        with:
-          parallel-finished: true
+    - name: Test with pytest
+      run: |
+        pytest
