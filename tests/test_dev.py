@@ -141,32 +141,32 @@ def test_entity_creation(ecs: Engine, caplog) -> None:
     assert all([e1, e2, e3, e4, e5])
 
 
-#* PASSING
-def test_component_registration(ecs: Engine) -> None:
-    """
-    Test that specific Component types exist in the ECS Engine and that their 
-    cbit values are what we expect.
-    """
-    attacker = ecs.components.get_type("Attacker")
+# #* PASSING
+# def test_component_registration(ecs: Engine) -> None:
+#     """
+#     Test that specific Component types exist in the ECS Engine and that their 
+#     cbit values are what we expect.
+#     """
+#     attacker = ecs.components.get_type("Attacker")
     
-    # Getting can also be done by Component class.
-    health = ecs.components.get_type(Health)
+#     # Getting can also be done by Component class.
+#     health = ecs.components.get_type(Health)
     
-    # Getting by string is not case-sensitive.
-    is_frozen = ecs.components.get_type('isfrozen')
+#     # Getting by string is not case-sensitive.
+#     is_frozen = ecs.components.get_type('isfrozen')
     
-    noun = ecs.components.get_type('Noun')
-    position = ecs.components.get_type('Position')
-    renderable = ecs.components.get_type('Renderable')
-    velocity = ecs.components.get_type('Velocity')
+#     noun = ecs.components.get_type('Noun')
+#     position = ecs.components.get_type('Position')
+#     renderable = ecs.components.get_type('Renderable')
+#     velocity = ecs.components.get_type('Velocity')
 
-    assert attacker.cbit == 0
-    assert health.cbit == 1
-    assert is_frozen.cbit == 2
-    assert noun.cbit == 3
-    assert position.cbit == 4
-    assert renderable.cbit == 5
-    assert velocity.cbit == 6
+#     assert attacker.cbit == 0
+#     assert health.cbit == 1
+#     assert is_frozen.cbit == 2
+#     assert noun.cbit == 3
+#     assert position.cbit == 4
+#     assert renderable.cbit == 5
+#     assert velocity.cbit == 6
 
 
 #* PASSING
