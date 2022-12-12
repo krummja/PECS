@@ -148,16 +148,17 @@ def test_component_registration(ecs: Engine) -> None:
     cbit values are what we expect.
     """
     attacker = ecs.components.get_type("Attacker")
-    position = ecs.components.get_type('Position')
-    velocity = ecs.components.get_type('Velocity')
-    renderable = ecs.components.get_type('Renderable')
-    noun = ecs.components.get_type('Noun')
-
-    # Getting by string is not case-sensitive.
-    is_frozen = ecs.components.get_type('isfrozen')
-
+    
     # Getting can also be done by Component class.
     health = ecs.components.get_type(Health)
+    
+    # Getting by string is not case-sensitive.
+    is_frozen = ecs.components.get_type('isfrozen')
+    
+    noun = ecs.components.get_type('Noun')
+    position = ecs.components.get_type('Position')
+    renderable = ecs.components.get_type('Renderable')
+    velocity = ecs.components.get_type('Velocity')
 
     assert attacker.cbit == 0
     assert health.cbit == 1
