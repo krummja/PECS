@@ -136,6 +136,9 @@ class MovementSystem(pecs.BaseSystem):
 
     def update(self) -> None:
         movables = self._queries
+        for entity in movables:
+            entity[Position].x += entity[Velocity].x
+            entity[Position].y += entity[Velocity].y
 ```
 
 > ---
