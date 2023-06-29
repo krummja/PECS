@@ -3,6 +3,7 @@ from .domain import Domain, Entity
 from .engine import Engine
 from .loader import Loader
 from .events import EntityEvent
+from .base_system import BaseSystem
 
 
 __all__ = [
@@ -12,4 +13,5 @@ __all__ = [
     'Engine',
     'Loader',
     'EntityEvent',
+    'BaseSystem',
 ]
