@@ -36,7 +36,7 @@ class EntityRegistry:
 
     def values(self):
         return self._map.values()
-    
+
     def get_entity_id(self, entity_or_alias: Entity | str) -> str:
         """
         Get an Entity's identifier either by passing the entity itself or its
@@ -56,7 +56,7 @@ class EntityRegistry:
         else:
             id_: str = entity_or_alias.eid
         return id_
-    
+
     def create(self, alias: str | None = None) -> Entity:
         """
         Create a new Entity in the engine's Entity registry.
@@ -72,7 +72,7 @@ class EntityRegistry:
         """
         entity = Entity(self.domain, self.domain.create_uid())
         self._map[entity.eid] = entity
-        
+
         if alias:
             if alias in self.aliases.keys():
                 raise KeyError(f"Entity already exists with alias {alias}")
@@ -108,7 +108,7 @@ class EntityRegistry:
         # props from the process above.
         for name, props in comp_props.items():
             self.domain.engine.components.attach(entity, name, props)
-        
+
         return entity
 
     def get_by_alias(self, alias: str) -> Entity:
@@ -144,11 +144,11 @@ class EntityRegistry:
 
 
 class Domain:
-    
+
     @staticmethod
     def create_uid() -> str:
         return str(uuid1())
-    
+
     def __init__(self, engine: Engine) -> None:
         self.engine = engine
         self.entities = EntityRegistry(self)
@@ -168,7 +168,7 @@ class Domain:
         all_of: ComponentQuery | None = None,
         any_of: ComponentQuery | None = None,
         none_of: ComponentQuery | None = None,
-    ) -> Query:        
+    ) -> Query:
         query = Query(self, all_of, any_of, none_of)
         self.queries.append(query)
         return query

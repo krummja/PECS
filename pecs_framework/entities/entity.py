@@ -29,10 +29,10 @@ class Entity:
         return cast(CT, get_component(self, _component))
 
     def fire_event(
-            self, 
-            event: str, 
-            data: dict[str, Any] | EventData | None = None
-        ) -> EntityEvent:
+        self,
+        event: str,
+        data: dict[str, Any] | EventData | None = None
+    ) -> EntityEvent:
         if data and isinstance(data, EventData):
             data = data.record
         elif data and isinstance(data, dict):
@@ -46,7 +46,7 @@ class Entity:
             if evt.prevented:
                 return evt
         return evt
-    
+
     def on_component_added(self):
         pass
 
@@ -55,7 +55,7 @@ class Entity:
 
     def on_entity_destroyed(self):
         pass
-    
+
     def _on_component_added(self):
         candidacy(self.domain, self)
         self.on_component_added()
@@ -72,5 +72,5 @@ class Entity:
         for component in to_delete:
             self.components[component.comp_id]._entity_id = ''
             del self.components[component.comp_id]
-            
+
         self.on_entity_destroyed()

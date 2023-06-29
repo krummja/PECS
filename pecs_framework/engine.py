@@ -12,7 +12,7 @@ from pecs_framework.component import ComponentMeta, Component
 from pecs_framework.domain import Domain, EntityRegistry
 from pecs_framework.entities import Entity
 from pecs_framework.entities import (
-    has_component, 
+    has_component,
     add_component,
     add_component_type,
     remove_component,
@@ -21,7 +21,7 @@ from pecs_framework.prefab import PrefabBuilder
 
 
 class ComponentRegistry:
-    
+
     def __init__(self, engine: Engine) -> None:
         self._engine = engine
         self._cbits = 0
@@ -53,8 +53,8 @@ class ComponentRegistry:
 
     @beartype
     def attach(
-        self, 
-        entity: Entity, 
+        self,
+        entity: Entity,
         component: ComponentMeta | str | Component,
         properties: dict[str, Any] | None = None,
     ) -> None:
@@ -83,7 +83,7 @@ class ComponentRegistry:
         """
         if isinstance(component, str):
             component = self._map[component.upper()]
-            
+
         if isinstance(component, ComponentMeta):
             properties_ = properties if properties else {}
             add_component_type(entity, component, properties_)
@@ -92,8 +92,8 @@ class ComponentRegistry:
 
     @beartype
     def remove(
-        self, 
-        entity: Entity, 
+        self,
+        entity: Entity,
         component: ComponentMeta | str | Component
     ) -> None:
         if not isinstance(component, ComponentMeta):
@@ -101,7 +101,7 @@ class ComponentRegistry:
                 component = self._map[component.upper()]
             else:
                 component = component.__class__
-        
+
         remove_component(entity, component)
 
     @beartype
@@ -112,10 +112,10 @@ class ComponentRegistry:
 
 
 class Engine:
-    
+
     def __init__(self, loader: Loader | None = None) -> None:
         """
-        The core ECS engine, providing access to the Domain and 
+        The core ECS engine, providing access to the Domain and
         ComponentRegistry objects.
         """
         self._domain: Domain

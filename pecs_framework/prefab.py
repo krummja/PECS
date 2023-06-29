@@ -53,34 +53,34 @@ class PrefabBuilder:
         return self._templates
 
     def deserialize(self, definition: str) -> EntityTemplate:
-        data = dict(json.loads(definition))
+        data: dict[str, Any] = dict(json.loads(definition))
         components: list[ComponentTemplate] = []
 
         if 'components' in data.keys():
-            for comp_def in data['components']:                
+            for comp_def in data['components']:
                 component_template = ComponentTemplate(
-                    component_type = comp_def['type'],
-                    properties = comp_def.get('properties', {}),
+                    component_type=comp_def['type'],
+                    properties=comp_def.get('properties', {}),
                 )
 
                 components.append(component_template)
 
         entity_template = EntityTemplate(
-            name = data['name'],
-            inherit = data.get('inherit', []),
-            components = components,
+            name=data['name'],
+            inherit=data.get('inherit', []),
+            components=components,
         )
 
         return entity_template
-        
+
     def register(self, path: str, file: str) -> None:
         full_path = os.path.join(str(Path(path) / file))
         if full_path[-5:] != '.json':
-             full_path += '.json'
-        
+            full_path += '.json'
+
         with open(full_path, 'r') as prefab_file:
             data = prefab_file.read()
-            
+
         prefab = self.deserialize(data)
         self._templates[prefab.name] = prefab
 
@@ -93,7 +93,7 @@ class PrefabBuilder:
 
         # Once we've returned to this method, extend our original prefab's
         # components with the components of each found parent template.
-        
+
         # prefab_components = deque(prefab.components)
         for template in self._temp:
             # for component in template.components:
@@ -111,13 +111,13 @@ class PrefabBuilder:
             self._temp.appendleft(self.recurse_template(self.templates[parent]))
         else:
             return template
-                    
+
         # for parent in template.inherit:
         #     self._temp.append(self.recurse_template(self.templates[parent]))
         # return template
 
     def resolve_overrides(
-        self, 
+        self,
         components: list[ComponentTemplate]
     ) -> dict[str, dict[str, Any]]:
         """

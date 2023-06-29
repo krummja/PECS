@@ -11,7 +11,7 @@ from pecs_framework.component import Component, ComponentMeta, CT
 
 
 def add_component_type(
-    entity: Entity, 
+    entity: Entity,
     component: ComponentMeta,
     properties: dict[str, Any] | None = None,
 ) -> None:

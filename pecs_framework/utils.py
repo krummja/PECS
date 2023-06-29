@@ -29,7 +29,7 @@ def all_equal(arr: Iterable) -> bool:
 
 
 def iter_index(
-    arr: Sequence[ComponentTemplate], 
+    arr: Sequence[ComponentTemplate],
     value: ComponentTemplate,
     start: int = 0,
 ) -> Generator[int, None, None]:
@@ -45,6 +45,6 @@ def iter_index(
         i = start - 1
         try:
             while True:
-                yield (i := seq_index(value, i+1))
+                yield (i := seq_index(value, i + 1))
         except ValueError:
             pass
