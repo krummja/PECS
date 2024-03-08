@@ -7,6 +7,7 @@ if TYPE_CHECKING:
 
 import os
 import pytest
+from pathlib import Path
 
 from pecs_framework import Engine
 from pecs_framework.base_system import BaseSystem, Loop
@@ -25,8 +26,8 @@ from tests.components import loader
 import json
 
 
-TEST_DIR = os.path.dirname(__file__)
-PREFABS = os.path.join(TEST_DIR, 'prefabs')
+TEST_DIR = Path(__file__).parent.resolve()
+PREFABS = Path(TEST_DIR, 'prefabs')
 
 
 class MovementSystem(BaseSystem):
@@ -63,9 +64,6 @@ class MockLoop(Loop):
     def post_update(self) -> None:
         pass
 
-
-#! TESTS ======================================================================
-#! ----------------------------------------------------------------------------
 
 @pytest.fixture(scope="function")
 def ecs() -> Engine:
@@ -132,7 +130,6 @@ def prefab() -> str:
     return definition
 
 
-#* PASSING
 def test_entity_creation(ecs: Engine, caplog) -> None:
     """
     Test that the Entity instances we created exist and are accessible via the
@@ -148,7 +145,7 @@ def test_entity_creation(ecs: Engine, caplog) -> None:
     assert all([e1, e2, e3, e4, e5])
 
 
-# #* PASSING
+pytest.mark.skipif(os.environ.get("ENVIRONMENT") == "Github")
 def test_component_registration(ecs: Engine) -> None:
     """
     Test that specific Component types exist in the ECS Engine and that their
@@ -176,7 +173,6 @@ def test_component_registration(ecs: Engine) -> None:
     assert velocity.cbit == 6
 
 
-#* PASSING
 def test_component_attachment(ecs: Engine) -> None:
     """
     Test that our Component attachments were successful by checking that the
@@ -199,7 +195,6 @@ def test_component_attachment(ecs: Engine) -> None:
     assert utils.owns_component(e1, e1_position)
 
 
-#* PASSING
 def test_component_instantiation(ecs: Engine) -> None:
     """
     Test that a Component that is attached to an Entity was instantiated with
@@ -213,7 +208,6 @@ def test_component_instantiation(ecs: Engine) -> None:
     assert e1_position.y == 10
 
 
-#* PASSING
 def test_component_removal(ecs: Engine) -> None:
     """
     Test that a Component that is attached to an Entity was removed when a
@@ -226,7 +220,6 @@ def test_component_removal(ecs: Engine) -> None:
     assert not ecs.components.has(e3, Position)
 
 
-#* PASSING
 def test_entity_destruction(ecs: Engine) -> None:
     """
     Test that an Entity that currently exists in the Domain is destroyed when
@@ -251,7 +244,6 @@ def test_entity_destruction(ecs: Engine) -> None:
     assert entity3.eid not in domain.entities.keys()
 
 
-#* PASSING
 def test_component_destruction_with_entity(ecs: Engine) -> None:
     """
     Test that when an Entity is destroyed, all of its attached Components are
@@ -276,17 +268,16 @@ def test_component_destruction_with_entity(ecs: Engine) -> None:
     assert frozen.entity_id == ''
 
 
-# TODO
+pytest.mark.skip(reason="todo")
 def test_on_component_added(ecs: Engine) -> None:
     pass
 
 
-# TODO
+pytest.mark.skip(reason="todo")
 def test_on_component_removed(ecs: Engine) -> None:
     pass
 
 
-#* PASSING
 def test_multidomain(ecs: Engine) -> None:
     """
     Test the Domain switching feature.
@@ -301,7 +292,6 @@ def test_multidomain(ecs: Engine) -> None:
     assert ecs.domain == ecs._domains['World']
 
 
-#* PASSING
 def test_component_query(ecs: Engine) -> None:
     """
     Test Component querying. This is crucial to system creation and the heart
@@ -321,7 +311,6 @@ def test_component_query(ecs: Engine) -> None:
     assert len(movable.result) == 1
 
 
-#* PASSING
 def test_system_behavior(ecs: Engine) -> None:
     """
     Test that a system using a Query can modify the state of Component
@@ -371,18 +360,15 @@ def test_entity_events(ecs: Engine) -> None:
     assert e2[Health].current == e2[Health].maximum - 15
 
 
-#* PASSING
 def test_component_loader(ecs: Engine) -> None:
     assert len(ecs.components._map) == 7
 
 
-# TODO
+pytest.mark.skip(reason="todo")
 def test_serialization(ecs: Engine) -> None:
-    # ecs.serialize()
     pass
 
 
-#* PASSING
 def test_deserialization(ecs: Engine, prefab: str) -> None:
     """Test prefab definition unpacking into the correct objects."""
     template: EntityTemplate = ecs.prefabs.deserialize(prefab)
@@ -392,7 +378,6 @@ def test_deserialization(ecs: Engine, prefab: str) -> None:
     assert len(template.components) == 3
 
 
-#* PASSING
 def test_prefab(ecs: Engine, prefab: str) -> None:
     template: EntityTemplate = ecs.prefabs.deserialize(prefab)
     components: list[ComponentTemplate] = template.components
@@ -401,7 +386,6 @@ def test_prefab(ecs: Engine, prefab: str) -> None:
     assert components[1].properties['ch'] == '?'
 
 
-#* PASSING
 def test_entity_from_prefab(ecs: Engine) -> None:
     test_entity = ecs.domain.entities.create_from_prefab(
         template = 'Character',

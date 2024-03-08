@@ -72,9 +72,9 @@ class PrefabBuilder:
 
         return entity_template
 
-    def register(self, path: str, file: str) -> None:
+    def register(self, path: str | Path, file: str) -> None:
         full_path = str(Path(path, file))
-        if full_path[-5:] != '.json':
+        if not full_path.endswith(".json"):
             full_path += '.json'
 
         with open(full_path, 'r') as prefab_file:

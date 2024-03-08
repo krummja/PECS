@@ -19,9 +19,6 @@ from dataclasses import dataclass, field
 
 from rich.console import Console
 
-from pycallgraph2 import PyCallGraph
-from pycallgraph2.output import GraphvizOutput
-
 
 @dataclass
 class ComponentA(Component):
