@@ -29,6 +29,8 @@ import json
 TEST_DIR = Path(__file__).parent.resolve()
 PREFABS = Path(TEST_DIR, 'prefabs')
 
+GITHUB_ENV = os.getenv("CI")
+
 
 class MovementSystem(BaseSystem):
 
@@ -145,7 +147,7 @@ def test_entity_creation(ecs: Engine, caplog) -> None:
     assert all([e1, e2, e3, e4, e5])
 
 
-pytest.mark.skipif(os.getenv("CI") is not None)
+pytest.mark.skipif(GITHUB_ENV is not None)
 def test_component_registration(ecs: Engine) -> None:
     """
     Test that specific Component types exist in the ECS Engine and that their
