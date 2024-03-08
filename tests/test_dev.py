@@ -145,7 +145,7 @@ def test_entity_creation(ecs: Engine, caplog) -> None:
     assert all([e1, e2, e3, e4, e5])
 
 
-pytest.mark.skipif(os.environ.get("ENVIRONMENT") == "Github")
+pytest.mark.skipif(os.getenv("CI") is not None)
 def test_component_registration(ecs: Engine) -> None:
     """
     Test that specific Component types exist in the ECS Engine and that their
