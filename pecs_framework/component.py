@@ -4,7 +4,6 @@ from beartype.typing import TypeVar
 from pecs_framework._types import Bases, Namespace
 from pecs_framework.events import EntityEvent
 
-import json
 import sys
 import traceback
 

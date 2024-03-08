@@ -1,0 +1,277 @@
+{
+    "569491c8-dd0f-11ee-9581-2cf05d8aaaf8": {
+        "alias": "e1",
+        "components": [
+            {
+                "comp_id": "POSITION",
+                "cbit": 4,
+                "data": {
+                    "x": 10,
+                    "y": 10
+                }
+            },
+            {
+                "comp_id": "VELOCITY",
+                "cbit": 6,
+                "data": {
+                    "x": 1,
+                    "y": 1
+                }
+            },
+            {
+                "comp_id": "RENDERABLE",
+                "cbit": 5,
+                "data": {
+                    "ch": "@",
+                    "fg": [
+                        255,
+                        0,
+                        255
+                    ],
+                    "bg": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            },
+            {
+                "comp_id": "HEALTH",
+                "cbit": 1,
+                "data": {
+                    "maximum": 100,
+                    "current": 100
+                }
+            },
+            {
+                "comp_id": "ATTACKER",
+                "cbit": 0,
+                "data": {
+                    "strength": 10
+                }
+            }
+        ]
+    },
+    "569491c9-dd0f-11ee-bc22-2cf05d8aaaf8": {
+        "alias": "e2",
+        "components": [
+            {
+                "comp_id": "POSITION",
+                "cbit": 4,
+                "data": {
+                    "x": 10,
+                    "y": 10
+                }
+            },
+            {
+                "comp_id": "VELOCITY",
+                "cbit": 6,
+                "data": {
+                    "x": 1,
+                    "y": 1
+                }
+            },
+            {
+                "comp_id": "RENDERABLE",
+                "cbit": 5,
+                "data": {
+                    "ch": "@",
+                    "fg": [
+                        255,
+                        0,
+                        255
+                    ],
+                    "bg": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            },
+            {
+                "comp_id": "HEALTH",
+                "cbit": 1,
+                "data": {
+                    "maximum": 100,
+                    "current": 100
+                }
+            },
+            {
+                "comp_id": "ATTACKER",
+                "cbit": 0,
+                "data": {
+                    "strength": 10
+                }
+            }
+        ]
+    },
+    "569491ca-dd0f-11ee-bbed-2cf05d8aaaf8": {
+        "alias": "e3",
+        "components": [
+            {
+                "comp_id": "POSITION",
+                "cbit": 4,
+                "data": {
+                    "x": 10,
+                    "y": 10
+                }
+            },
+            {
+                "comp_id": "VELOCITY",
+                "cbit": 6,
+                "data": {
+                    "x": 1,
+                    "y": 1
+                }
+            },
+            {
+                "comp_id": "RENDERABLE",
+                "cbit": 5,
+                "data": {
+                    "ch": "@",
+                    "fg": [
+                        255,
+                        0,
+                        255
+                    ],
+                    "bg": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            },
+            {
+                "comp_id": "HEALTH",
+                "cbit": 1,
+                "data": {
+                    "maximum": 100,
+                    "current": 100
+                }
+            },
+            {
+                "comp_id": "ATTACKER",
+                "cbit": 0,
+                "data": {
+                    "strength": 10
+                }
+            }
+        ]
+    },
+    "569491cb-dd0f-11ee-8747-2cf05d8aaaf8": {
+        "alias": "e4",
+        "components": [
+            {
+                "comp_id": "POSITION",
+                "cbit": 4,
+                "data": {
+                    "x": 10,
+                    "y": 10
+                }
+            },
+            {
+                "comp_id": "VELOCITY",
+                "cbit": 6,
+                "data": {
+                    "x": 1,
+                    "y": 1
+                }
+            },
+            {
+                "comp_id": "RENDERABLE",
+                "cbit": 5,
+                "data": {
+                    "ch": "@",
+                    "fg": [
+                        255,
+                        0,
+                        255
+                    ],
+                    "bg": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            },
+            {
+                "comp_id": "HEALTH",
+                "cbit": 1,
+                "data": {
+                    "maximum": 100,
+                    "current": 100
+                }
+            },
+            {
+                "comp_id": "ISFROZEN",
+                "cbit": 2,
+                "data": {}
+            },
+            {
+                "comp_id": "ATTACKER",
+                "cbit": 0,
+                "data": {
+                    "strength": 10
+                }
+            }
+        ]
+    },
+    "569491cc-dd0f-11ee-8ac0-2cf05d8aaaf8": {
+        "alias": null,
+        "components": [
+            {
+                "comp_id": "POSITION",
+                "cbit": 4,
+                "data": {
+                    "x": 10,
+                    "y": 10
+                }
+            },
+            {
+                "comp_id": "VELOCITY",
+                "cbit": 6,
+                "data": {
+                    "x": 1,
+                    "y": 1
+                }
+            },
+            {
+                "comp_id": "RENDERABLE",
+                "cbit": 5,
+                "data": {
+                    "ch": "@",
+                    "fg": [
+                        255,
+                        0,
+                        255
+                    ],
+                    "bg": [
+                        0,
+                        0,
+                        0
+                    ]
+                }
+            },
+            {
+                "comp_id": "HEALTH",
+                "cbit": 1,
+                "data": {
+                    "maximum": 100,
+                    "current": 100
+                }
+            },
+            {
+                "comp_id": "ISFROZEN",
+                "cbit": 2,
+                "data": {}
+            },
+            {
+                "comp_id": "ATTACKER",
+                "cbit": 0,
+                "data": {
+                    "strength": 10
+                }
+            }
+        ]
+    }
+}

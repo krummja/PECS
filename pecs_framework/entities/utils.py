@@ -1,13 +1,21 @@
 from __future__ import annotations
-from beartype.typing import *
+from beartype.typing import TYPE_CHECKING
+from beartype.typing import Any
+from beartype.typing import cast
 
 if TYPE_CHECKING:
     from pecs_framework._types import CompId
     from pecs_framework.domain import Domain
     from .entity import Entity
 
-from pecs_framework.utils import has_bit, subtract_bit, add_bit
-from pecs_framework.component import Component, ComponentMeta, CT
+import json
+
+from pecs_framework.utils import has_bit
+from pecs_framework.utils import subtract_bit
+from pecs_framework.utils import add_bit
+from pecs_framework.component import Component
+from pecs_framework.component import ComponentMeta
+from pecs_framework.component import CT
 
 
 def add_component_type(
@@ -88,3 +96,7 @@ def get_component(entity: Entity, component_type: type[CT]) -> CT:
 def candidacy(domain: Domain, entity: Entity) -> None:
     if entity.qeligible:
         domain.candidate(entity)
+
+
+def serialize_component(component: Component) -> str:
+    return json.dumps(component.__dict__)

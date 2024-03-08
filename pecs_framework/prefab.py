@@ -4,11 +4,10 @@ from beartype.typing import Any, TYPE_CHECKING, Deque
 if TYPE_CHECKING:
     from pecs_framework.engine import Engine
     from pecs_framework._types import CompId
-    from pecs_framework.component import Component
 
 import os
 import json
-from copy import copy, deepcopy
+from copy import deepcopy
 from pathlib import Path
 from dataclasses import dataclass, field
 from pecs_framework.utils import iter_index
@@ -74,7 +73,7 @@ class PrefabBuilder:
         return entity_template
 
     def register(self, path: str, file: str) -> None:
-        full_path = os.path.join(str(Path(path) / file))
+        full_path = str(Path(path, file))
         if full_path[-5:] != '.json':
             full_path += '.json'
 
@@ -93,11 +92,7 @@ class PrefabBuilder:
 
         # Once we've returned to this method, extend our original prefab's
         # components with the components of each found parent template.
-
-        # prefab_components = deque(prefab.components)
         for template in self._temp:
-            # for component in template.components:
-            #     prefab_components.append(component)
             prefab.components.extend(template.components)
 
         # Clear the temp array so we don't pollute other templates.
@@ -111,10 +106,6 @@ class PrefabBuilder:
             self._temp.appendleft(self.recurse_template(self.templates[parent]))
         else:
             return template
-
-        # for parent in template.inherit:
-        #     self._temp.append(self.recurse_template(self.templates[parent]))
-        # return template
 
     def resolve_overrides(
         self,

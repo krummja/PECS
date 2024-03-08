@@ -1,6 +1,6 @@
 from __future__ import annotations
-from beartype.typing import *
-from typing import TypeAlias
+from beartype.typing import TYPE_CHECKING
+from beartype.typing import Any
 from types import SimpleNamespace
 if TYPE_CHECKING:
     pass

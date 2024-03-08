@@ -10,9 +10,16 @@ import pytest
 
 from pecs_framework import Engine
 from pecs_framework.base_system import BaseSystem, Loop
-from pecs_framework.entities.utils import *
 
-from tests.components import *
+from pecs_framework.entities import utils
+
+from tests.components import Attacker
+from tests.components import Health
+from tests.components import IsFrozen
+from tests.components import Noun
+from tests.components import Position
+from tests.components import Renderable
+from tests.components import Velocity
 from tests.components import loader
 
 import json
@@ -26,11 +33,11 @@ class MovementSystem(BaseSystem):
 
     def initialize(self) -> None:
         self.query(
-            'movable', 
-            all_of = [ Position, Velocity ],
-            none_of = [ IsFrozen ],
+            'movable',
+            all_of = [Position, Velocity],
+            none_of = [IsFrozen],
         )
-    
+
     def update(self) -> None:
         movables = self._queries['movable'].result
         for entity in movables:
@@ -65,7 +72,7 @@ def ecs() -> Engine:
     ecs = Engine(loader=loader)
     domain = ecs.create_domain('World')
     ecs.components.load("tests.components")
-    
+
     ecs.prefabs.register(PREFABS, 'game_object')
     ecs.prefabs.register(PREFABS, 'character')
     ecs.prefabs.register(PREFABS, 'player')
@@ -95,7 +102,7 @@ def ecs() -> Engine:
             ecs.components.attach(entity, IsFrozen)
 
         ecs.components.attach(entity, Attacker(10))
-        
+
     return ecs
 
 
@@ -120,7 +127,7 @@ def prefab() -> str:
                     "text": "<unset>"
                 }
             }
-        ]  
+        ]
     })
     return definition
 
@@ -142,31 +149,31 @@ def test_entity_creation(ecs: Engine, caplog) -> None:
 
 
 # #* PASSING
-# def test_component_registration(ecs: Engine) -> None:
-#     """
-#     Test that specific Component types exist in the ECS Engine and that their 
-#     cbit values are what we expect.
-#     """
-#     attacker = ecs.components.get_type("Attacker")
-    
-#     # Getting can also be done by Component class.
-#     health = ecs.components.get_type(Health)
-    
-#     # Getting by string is not case-sensitive.
-#     is_frozen = ecs.components.get_type('isfrozen')
-    
-#     noun = ecs.components.get_type('Noun')
-#     position = ecs.components.get_type('Position')
-#     renderable = ecs.components.get_type('Renderable')
-#     velocity = ecs.components.get_type('Velocity')
+def test_component_registration(ecs: Engine) -> None:
+    """
+    Test that specific Component types exist in the ECS Engine and that their
+    cbit values are what we expect.
+    """
+    attacker = ecs.components.get_type("Attacker")
 
-#     assert attacker.cbit == 0
-#     assert health.cbit == 1
-#     assert is_frozen.cbit == 2
-#     assert noun.cbit == 3
-#     assert position.cbit == 4
-#     assert renderable.cbit == 5
-#     assert velocity.cbit == 6
+    # Getting can also be done by Component class.
+    health = ecs.components.get_type(Health)
+
+    # Getting by string is not case-sensitive.
+    is_frozen = ecs.components.get_type('isfrozen')
+
+    noun = ecs.components.get_type('Noun')
+    position = ecs.components.get_type('Position')
+    renderable = ecs.components.get_type('Renderable')
+    velocity = ecs.components.get_type('Velocity')
+
+    assert attacker.cbit == 0
+    assert health.cbit == 1
+    assert is_frozen.cbit == 2
+    assert noun.cbit == 3
+    assert position.cbit == 4
+    assert renderable.cbit == 5
+    assert velocity.cbit == 6
 
 
 #* PASSING
@@ -188,8 +195,8 @@ def test_component_attachment(ecs: Engine) -> None:
     assert ecs.components.has(e4, Position)
     assert ecs.components.has(e5, Renderable)
 
-    e1_position: Position = get_component(e1, Position)
-    assert owns_component(e1, e1_position)
+    e1_position: Position = utils.get_component(e1, Position)
+    assert utils.owns_component(e1, e1_position)
 
 
 #* PASSING
@@ -200,12 +207,12 @@ def test_component_instantiation(ecs: Engine) -> None:
     """
     domain = ecs.domain
     e1 = domain.entities.get_by_alias('e1')
-    e1_position: Position = get_component(e1, Position)
+    e1_position: Position = utils.get_component(e1, Position)
     assert e1_position is not None
     assert e1_position.x == 10
     assert e1_position.y == 10
-    
-    
+
+
 #* PASSING
 def test_component_removal(ecs: Engine) -> None:
     """
@@ -216,7 +223,7 @@ def test_component_removal(ecs: Engine) -> None:
     e3 = domain.entities.get_by_alias('e3')
     assert ecs.components.has(e3, Position)
     ecs.components.remove(e3, Position)
-    assert not ecs.components.has(e3, Position)    
+    assert not ecs.components.has(e3, Position)
 
 
 #* PASSING
@@ -229,7 +236,7 @@ def test_entity_destruction(ecs: Engine) -> None:
     entity1 = domain.entities.create('delete_1')
     entity2 = domain.entities.create('delete_2')
     entity3 = domain.entities.create('delete_3')
-    
+
     assert entity1.eid in domain.entities.keys()
     assert entity2.eid in domain.entities.keys()
     assert entity3.eid in domain.entities.keys()
@@ -255,11 +262,11 @@ def test_component_destruction_with_entity(ecs: Engine) -> None:
     ecs.components.attach(entity, Position(10, 10))
     ecs.components.attach(entity, IsFrozen)
 
-    assert has_component(entity, Position)
-    assert has_component(entity, IsFrozen)
+    assert utils.has_component(entity, Position)
+    assert utils.has_component(entity, IsFrozen)
 
-    position = get_component(entity, Position)
-    frozen = get_component(entity, IsFrozen)
+    position = utils.get_component(entity, Position)
+    frozen = utils.get_component(entity, IsFrozen)
 
     assert position is not None
     assert frozen is not None
@@ -303,8 +310,8 @@ def test_component_query(ecs: Engine) -> None:
     domain = ecs.domain
 
     movable = domain.create_query(
-        all_of = [ 
-            Position, 
+        all_of = [
+            Position,
             Velocity,
         ],
         none_of = [
@@ -312,12 +319,12 @@ def test_component_query(ecs: Engine) -> None:
         ],
     )
     assert len(movable.result) == 1
-    
+
 
 #* PASSING
 def test_system_behavior(ecs: Engine) -> None:
     """
-    Test that a system using a Query can modify the state of Component 
+    Test that a system using a Query can modify the state of Component
     instances attached to Entity instances as expected.
 
     In this case, a single loop will perform 20 ticks. Since the current
@@ -325,12 +332,12 @@ def test_system_behavior(ecs: Engine) -> None:
     is {'x': 10, 'y': 10}, we expect to see a value of {'x': 30, 'y': 30} after
     the system has performed its update loop.
     """
-    domain = ecs.domain    
+    domain = ecs.domain
     e1 = domain.entities.get_by_alias('e1')
 
     assert e1[Position].x == 10
     assert e1[Position].y == 10
-    
+
     test_loop = MockLoop(ecs, domain)
     test_loop.update()
 
@@ -371,6 +378,7 @@ def test_component_loader(ecs: Engine) -> None:
 
 # TODO
 def test_serialization(ecs: Engine) -> None:
+    # ecs.serialize()
     pass
 
 
@@ -415,16 +423,16 @@ def test_entity_from_prefab(ecs: Engine) -> None:
 
     assert ecs.components.has(test_entity, Renderable)
 
-    renderable: Renderable = get_component(test_entity, Renderable)
+    renderable: Renderable = utils.get_component(test_entity, Renderable)
     assert renderable.ch == '@'
     assert renderable.fg == (255, 0, 255)
     assert renderable.bg == (0, 0, 0)
 
-    position: Position = get_component(test_entity, Position)
+    position: Position = utils.get_component(test_entity, Position)
     assert position.x == 10
     assert position.y == 100
 
-    health: Health = get_component(test_entity, Health)
+    health: Health = utils.get_component(test_entity, Health)
     assert health.current == 1000
 
 
@@ -447,19 +455,19 @@ def test_partial_prefab_overrides(ecs: Engine) -> None:
 
     assert ecs.components.has(test_entity, Renderable)
 
-    renderable: Renderable = get_component(test_entity, Renderable)
+    renderable: Renderable = utils.get_component(test_entity, Renderable)
     assert renderable.ch == '#'
     assert renderable.fg == (255, 255, 255)
     assert renderable.bg == (0, 0, 0)
 
-    position: Position = get_component(test_entity, Position)
+    position: Position = utils.get_component(test_entity, Position)
     assert position.x == 10
     assert position.y == 0
 
-    health: Health = get_component(test_entity, Health)
+    health: Health = utils.get_component(test_entity, Health)
     assert health.current == 10
 
-    noun: Noun = get_component(test_entity, Noun)
+    noun: Noun = utils.get_component(test_entity, Noun)
     assert noun.text == 'TEST'
 
 
@@ -469,20 +477,20 @@ def test_default_prefab(ecs: Engine) -> None:
         alias = 'test3',
     )
 
-    health: Health = get_component(test_entity, Health)
+    health: Health = utils.get_component(test_entity, Health)
     assert health.maximum == 100
     assert health.current == 100
 
-    renderable: Renderable = get_component(test_entity, Renderable)
+    renderable: Renderable = utils.get_component(test_entity, Renderable)
     assert renderable.ch == '#'
     assert renderable.fg == (255, 255, 255)
     assert renderable.bg == (0, 0, 0)
 
-    position: Position = get_component(test_entity, Position)
+    position: Position = utils.get_component(test_entity, Position)
     assert position.x == 0
     assert position.y == 0
 
-    noun: Noun = get_component(test_entity, Noun)
+    noun: Noun = utils.get_component(test_entity, Noun)
     assert noun.text == '<unset>'
 
 
@@ -492,20 +500,20 @@ def test_deep_inheritance(ecs: Engine) -> None:
         alias = 'PLAYER',
     )
 
-    health: Health = get_component(player, Health)
+    health: Health = utils.get_component(player, Health)
     assert health.maximum == 100
     assert health.current == 100
 
-    renderable: Renderable = get_component(player, Renderable)
+    renderable: Renderable = utils.get_component(player, Renderable)
     assert renderable.ch == '@'
     assert renderable.fg == (255, 0, 255)
     assert renderable.bg == (0, 0, 0)
 
-    position: Position = get_component(player, Position)
+    position: Position = utils.get_component(player, Position)
     assert position.x == 0
     assert position.y == 0
 
-    noun: Noun = get_component(player, Noun)
+    noun: Noun = utils.get_component(player, Noun)
     assert noun.text == 'PLAYER'
 
 
@@ -515,21 +523,21 @@ def test_multi_inheritance(ecs: Engine) -> None:
         alias = 'Attacker',
     )
 
-    health: Health = get_component(combatant, Health)
+    health: Health = utils.get_component(combatant, Health)
     assert health.maximum == 100
     assert health.current == 100
 
-    renderable: Renderable = get_component(combatant, Renderable)
+    renderable: Renderable = utils.get_component(combatant, Renderable)
     assert renderable.ch == '#'
     assert renderable.fg == (255, 255, 255)
     assert renderable.bg == (0, 0, 0)
 
-    position: Position = get_component(combatant, Position)
+    position: Position = utils.get_component(combatant, Position)
     assert position.x == 0
     assert position.y == 0
 
-    noun: Noun = get_component(combatant, Noun)
+    noun: Noun = utils.get_component(combatant, Noun)
     assert noun.text == 'COMBATANT'
 
-    attacker: Attacker = get_component(combatant, Attacker)
+    attacker: Attacker = utils.get_component(combatant, Attacker)
     assert attacker.strength == 12

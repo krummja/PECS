@@ -1,12 +1,13 @@
 from __future__ import annotations
-from beartype.typing import *
-from typing import TypeAlias
-from abc import ABC, abstractmethod
+from beartype.typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from pecs_framework.query import Query, ComponentQuery
     from pecs_framework.domain import Domain
     from pecs_framework.engine import Engine
+    from pecs_framework.query import ComponentQuery
+    from pecs_framework.query import Query
+
+from abc import ABC, abstractmethod
 
 
 class Loop(ABC):

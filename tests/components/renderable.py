@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pecs_framework.component import Component
 
 
-Color: TypeAlias = tuple[int, int, int]
+Color: TypeAlias = tuple[int, int, int] | list[int]
 
 
 @dataclass
@@ -16,6 +16,6 @@ class Renderable(Component):
 
     def __post_init__(self) -> None:
         if isinstance(self.fg, list):
-            self.fg = tuple(self.fg)
+            self.fg = (self.fg[0], self.fg[1], self.fg[2])
         if isinstance(self.bg, list):
-            self.bg = tuple(self.bg)
+            self.bg = (self.bg[0], self.bg[1], self.bg[2])

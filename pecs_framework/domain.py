@@ -1,5 +1,6 @@
 from __future__ import annotations
-from beartype.typing import *
+from beartype.typing import TYPE_CHECKING
+from beartype.typing import Any
 
 from uuid import uuid1
 from collections import OrderedDict
@@ -12,7 +13,6 @@ if TYPE_CHECKING:
 from pecs_framework.entities import Entity
 from pecs_framework.query import Query
 from rich.console import Console
-from rich import inspect
 
 
 console = Console()
@@ -22,7 +22,8 @@ class EntityRegistry:
 
     def __init__(self, domain: Domain) -> None:
         self.domain = domain
-        self.aliases = OrderedDict()
+        self.alias_to_eid = OrderedDict()
+        self.eid_to_alias = OrderedDict()
         self._map: dict[str, Entity] = OrderedDict()
 
     def __getitem__(self, key: str) -> Entity:
@@ -30,6 +31,9 @@ class EntityRegistry:
 
     def __setitem__(self, key: str, entity: Entity) -> None:
         self._map[key] = entity
+
+    def __iter__(self):
+        return iter(self._map.values())
 
     def keys(self):
         return self._map.keys()
@@ -52,12 +56,17 @@ class EntityRegistry:
             The Entity's unique identifier
         """
         if isinstance(entity_or_alias, str):
-            id_: str = self.aliases.get(entity_or_alias, '')
+            id_: str = self.alias_to_eid.get(entity_or_alias, '')
         else:
             id_: str = entity_or_alias.eid
         return id_
 
-    def create(self, alias: str | None = None) -> Entity:
+    def create(
+        self,
+        alias: str | None = None,
+        *,
+        entity_id: str | None = None,
+    ) -> Entity:
         """
         Create a new Entity in the engine's Entity registry.
 
@@ -70,13 +79,17 @@ class EntityRegistry:
         -------
             The newly created Entity instance
         """
-        entity = Entity(self.domain, self.domain.create_uid())
+        entity = Entity(
+            self.domain,
+            entity_id if entity_id else self.domain.create_uid(),
+        )
         self._map[entity.eid] = entity
 
         if alias:
-            if alias in self.aliases.keys():
+            if alias in self.alias_to_eid:
                 raise KeyError(f"Entity already exists with alias {alias}")
-            self.aliases[alias] = entity.eid
+            self.alias_to_eid[alias] = entity.eid
+            self.eid_to_alias[entity.eid] = alias
 
         return entity
 
@@ -124,7 +137,7 @@ class EntityRegistry:
         -------
             The Entity corresponding to the passed alias.
         """
-        entity_id: str = self.aliases.get(alias, '')
+        entity_id: str = self.alias_to_eid.get(alias, '')
         if entity_id:
             return self.get_by_id(entity_id)
         else:
@@ -134,12 +147,19 @@ class EntityRegistry:
     def get_by_id(self, entity_id: str) -> Entity:
         return self._map[entity_id]
 
+    def get_alias_for_entity(self, entity_or_eid: Entity | str) -> str | None:
+        if isinstance(entity_or_eid, str):
+            return self.eid_to_alias.get(entity_or_eid, None)
+        return self.eid_to_alias.get(entity_or_eid.eid, None)
+
     def remove_entity_by_id(self, entity_id: str) -> None:
         self._map[entity_id]._on_entity_destroyed()
         del self._map[entity_id]
 
     def remove_entity_by_alias(self, alias: str) -> None:
         entity_id = self.get_entity_id(alias)
+        if alias in self.alias_to_eid:
+            del self.alias_to_eid[alias]
         self.remove_entity_by_id(entity_id)
 
 
@@ -152,7 +172,7 @@ class Domain:
     def __init__(self, engine: Engine) -> None:
         self.engine = engine
         self.entities = EntityRegistry(self)
-        self.queries: List[Query] = []
+        self.queries: list[Query] = []
 
     def destroy_entity(self, entity: Entity | str) -> None:
         if isinstance(entity, str):
@@ -161,6 +181,12 @@ class Domain:
             else:
                 self.entities.remove_entity_by_alias(entity)
         else:
+            # if entity.eid in self.entities.aliases.values():
+            for k, v in self.entities.alias_to_eid.items():
+                if v == entity.eid:
+                    alias = k
+                    self.entities.remove_entity_by_alias(alias)
+                    return
             self.entities.remove_entity_by_id(entity.eid)
 
     def create_query(

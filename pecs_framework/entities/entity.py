@@ -1,6 +1,8 @@
 from __future__ import annotations
-from beartype.typing import *
 from beartype import beartype
+from beartype.typing import TYPE_CHECKING
+from beartype.typing import Any
+from beartype.typing import cast
 from collections import OrderedDict
 
 if TYPE_CHECKING:
@@ -8,7 +10,8 @@ if TYPE_CHECKING:
 
 from pecs_framework.events import EventData, EntityEvent
 from pecs_framework.component import Component, CT
-from .utils import *
+from .utils import get_component
+from .utils import candidacy
 
 
 class Entity:
@@ -33,6 +36,32 @@ class Entity:
         event: str,
         data: dict[str, Any] | EventData | None = None
     ) -> EntityEvent:
+        """
+        Fire an event to all subscribed components attached to this entity.
+
+        The event name should be a simple, snake-cased string. Subscribed
+        components must implement a handler method that takes in an
+        `EntityEvent` and returns that event.
+
+        ## Example
+
+        ```py
+        @dataclass
+        class Health(Component):
+            '''Representation of an Entity's health.'''
+            maximum: int = 100
+            current: int = field(init=False)
+
+            def __post_init__(self) -> None:
+                self.current = self.maximum
+
+            def on_damage_taken(self, evt: EntityEvent) -> EntityEvent:
+                damage = evt.data.amount
+                self.current -= damage
+                evt.handle()
+                return evt
+        ```
+        """
         if data and isinstance(data, EventData):
             data = data.record
         elif data and isinstance(data, dict):

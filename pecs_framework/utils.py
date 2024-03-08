@@ -1,10 +1,13 @@
 from __future__ import annotations
-from beartype.typing import *
+from beartype.typing import TYPE_CHECKING
+from beartype.typing import Iterable
+from beartype.typing import Iterator
+from beartype.typing import Sequence
+
 if TYPE_CHECKING:
     from pecs_framework.prefab import ComponentTemplate
 
 from itertools import groupby, islice
-from collections import deque
 
 
 def subtract_bit(num: int, bit: int) -> int:
@@ -32,7 +35,7 @@ def iter_index(
     arr: Sequence[ComponentTemplate],
     value: ComponentTemplate,
     start: int = 0,
-) -> Generator[int, None, None]:
+) -> Iterator[int]:
     try:
         # Check if the iterable supports indexing.
         seq_index = arr.index

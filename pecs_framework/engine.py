@@ -1,22 +1,21 @@
 from __future__ import annotations
 from beartype import beartype
-from beartype.typing import *
+from beartype.typing import TYPE_CHECKING
+from beartype.typing import cast
+from beartype.typing import Any
 from collections import OrderedDict
 
 if TYPE_CHECKING:
     from pecs_framework._types import CompId
     from pecs_framework.loader import Loader
 
-from pecs_framework.utils import *
 from pecs_framework.component import ComponentMeta, Component
 from pecs_framework.domain import Domain, EntityRegistry
+from pecs_framework.entities import add_component
+from pecs_framework.entities import add_component_type
 from pecs_framework.entities import Entity
-from pecs_framework.entities import (
-    has_component,
-    add_component,
-    add_component_type,
-    remove_component,
-)
+from pecs_framework.entities import has_component
+from pecs_framework.entities import remove_component
 from pecs_framework.prefab import PrefabBuilder
 
 
