@@ -1,0 +1,9 @@
+name: Release
+on:
+    push:
+        branches:
+            - master
+jobs:
+    deployment:
+        runs-on: ubuntu-latest
+        environment: production
