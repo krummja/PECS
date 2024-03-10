@@ -5,7 +5,7 @@ from beartype.typing import Any
 from typing import TypeAlias
 
 if TYPE_CHECKING:
-    from pecs_framework.entities import Entity
+    from pecs_framework.entity import Entity
     from pecs_framework.domain import Domain
 
 from functools import reduce

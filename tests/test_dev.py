@@ -12,7 +12,9 @@ from pathlib import Path
 from pecs_framework import Engine
 from pecs_framework.base_system import BaseSystem, Loop
 
-from pecs_framework.entities import utils
+from pecs_framework.entity import owns_component
+from pecs_framework.entity import get_component
+from pecs_framework.entity import has_component
 
 from tests.components import Attacker
 from tests.components import Health
@@ -28,8 +30,7 @@ import json
 
 TEST_DIR = Path(__file__).parent.resolve()
 PREFABS = Path(TEST_DIR, 'prefabs')
-
-GITHUB_ENV = os.getenv("CI")
+DATA = Path(TEST_DIR, "data")
 
 
 class MovementSystem(BaseSystem):
@@ -147,7 +148,6 @@ def test_entity_creation(ecs: Engine, caplog) -> None:
     assert all([e1, e2, e3, e4, e5])
 
 
-pytest.mark.skipif(GITHUB_ENV is not None)
 def test_component_registration(ecs: Engine) -> None:
     """
     Test that specific Component types exist in the ECS Engine and that their
@@ -193,8 +193,8 @@ def test_component_attachment(ecs: Engine) -> None:
     assert ecs.components.has(e4, Position)
     assert ecs.components.has(e5, Renderable)
 
-    e1_position: Position = utils.get_component(e1, Position)
-    assert utils.owns_component(e1, e1_position)
+    e1_position: Position = get_component(e1, Position)
+    assert owns_component(e1, e1_position)
 
 
 def test_component_instantiation(ecs: Engine) -> None:
@@ -204,7 +204,7 @@ def test_component_instantiation(ecs: Engine) -> None:
     """
     domain = ecs.domain
     e1 = domain.entities.get_by_alias('e1')
-    e1_position: Position = utils.get_component(e1, Position)
+    e1_position: Position = get_component(e1, Position)
     assert e1_position is not None
     assert e1_position.x == 10
     assert e1_position.y == 10
@@ -256,11 +256,11 @@ def test_component_destruction_with_entity(ecs: Engine) -> None:
     ecs.components.attach(entity, Position(10, 10))
     ecs.components.attach(entity, IsFrozen)
 
-    assert utils.has_component(entity, Position)
-    assert utils.has_component(entity, IsFrozen)
+    assert has_component(entity, Position)
+    assert has_component(entity, IsFrozen)
 
-    position = utils.get_component(entity, Position)
-    frozen = utils.get_component(entity, IsFrozen)
+    position = get_component(entity, Position)
+    frozen = get_component(entity, IsFrozen)
 
     assert position is not None
     assert frozen is not None
@@ -366,12 +366,37 @@ def test_component_loader(ecs: Engine) -> None:
     assert len(ecs.components._map) == 7
 
 
-pytest.mark.skip(reason="todo")
 def test_serialization(ecs: Engine) -> None:
-    pass
+    domain = ecs.domain
+
+    FILENAME = "pytest_serialization.json"
+    path_handle = Path(DATA, FILENAME)
+
+    if path_handle.exists():
+        Path.unlink(path_handle)
+
+    entity_map = domain.entities._map
+    components_map = ecs.components._map
+
+    domain.save(DATA, FILENAME)
+
+    domain.reset()
+
+    domain.load(DATA, FILENAME)
+
+    for entity in domain.entities:
+        # Loaded EIDs will be found in the original map
+        assert entity.eid in entity_map.keys()
+
+        # Entity instances will be different objects in memory
+        assert entity not in entity_map.values()
+
+        for component in entity.components.values():
+            assert component.comp_id in components_map.keys()
+            assert component not in components_map.values()
 
 
-def test_deserialization(ecs: Engine, prefab: str) -> None:
+def test_prefab_deserialization(ecs: Engine, prefab: str) -> None:
     """Test prefab definition unpacking into the correct objects."""
     template: EntityTemplate = ecs.prefabs.deserialize(prefab)
 
@@ -409,16 +434,16 @@ def test_entity_from_prefab(ecs: Engine) -> None:
 
     assert ecs.components.has(test_entity, Renderable)
 
-    renderable: Renderable = utils.get_component(test_entity, Renderable)
+    renderable: Renderable = get_component(test_entity, Renderable)
     assert renderable.ch == '@'
     assert renderable.fg == (255, 0, 255)
     assert renderable.bg == (0, 0, 0)
 
-    position: Position = utils.get_component(test_entity, Position)
+    position: Position = get_component(test_entity, Position)
     assert position.x == 10
     assert position.y == 100
 
-    health: Health = utils.get_component(test_entity, Health)
+    health: Health = get_component(test_entity, Health)
     assert health.current == 1000
 
 
@@ -441,19 +466,19 @@ def test_partial_prefab_overrides(ecs: Engine) -> None:
 
     assert ecs.components.has(test_entity, Renderable)
 
-    renderable: Renderable = utils.get_component(test_entity, Renderable)
+    renderable: Renderable = get_component(test_entity, Renderable)
     assert renderable.ch == '#'
     assert renderable.fg == (255, 255, 255)
     assert renderable.bg == (0, 0, 0)
 
-    position: Position = utils.get_component(test_entity, Position)
+    position: Position = get_component(test_entity, Position)
     assert position.x == 10
     assert position.y == 0
 
-    health: Health = utils.get_component(test_entity, Health)
+    health: Health = get_component(test_entity, Health)
     assert health.current == 10
 
-    noun: Noun = utils.get_component(test_entity, Noun)
+    noun: Noun = get_component(test_entity, Noun)
     assert noun.text == 'TEST'
 
 
@@ -463,20 +488,20 @@ def test_default_prefab(ecs: Engine) -> None:
         alias = 'test3',
     )
 
-    health: Health = utils.get_component(test_entity, Health)
+    health: Health = get_component(test_entity, Health)
     assert health.maximum == 100
     assert health.current == 100
 
-    renderable: Renderable = utils.get_component(test_entity, Renderable)
+    renderable: Renderable = get_component(test_entity, Renderable)
     assert renderable.ch == '#'
     assert renderable.fg == (255, 255, 255)
     assert renderable.bg == (0, 0, 0)
 
-    position: Position = utils.get_component(test_entity, Position)
+    position: Position = get_component(test_entity, Position)
     assert position.x == 0
     assert position.y == 0
 
-    noun: Noun = utils.get_component(test_entity, Noun)
+    noun: Noun = get_component(test_entity, Noun)
     assert noun.text == '<unset>'
 
 
@@ -486,20 +511,20 @@ def test_deep_inheritance(ecs: Engine) -> None:
         alias = 'PLAYER',
     )
 
-    health: Health = utils.get_component(player, Health)
+    health: Health = get_component(player, Health)
     assert health.maximum == 100
     assert health.current == 100
 
-    renderable: Renderable = utils.get_component(player, Renderable)
+    renderable: Renderable = get_component(player, Renderable)
     assert renderable.ch == '@'
     assert renderable.fg == (255, 0, 255)
     assert renderable.bg == (0, 0, 0)
 
-    position: Position = utils.get_component(player, Position)
+    position: Position = get_component(player, Position)
     assert position.x == 0
     assert position.y == 0
 
-    noun: Noun = utils.get_component(player, Noun)
+    noun: Noun = get_component(player, Noun)
     assert noun.text == 'PLAYER'
 
 
@@ -509,21 +534,21 @@ def test_multi_inheritance(ecs: Engine) -> None:
         alias = 'Attacker',
     )
 
-    health: Health = utils.get_component(combatant, Health)
+    health: Health = get_component(combatant, Health)
     assert health.maximum == 100
     assert health.current == 100
 
-    renderable: Renderable = utils.get_component(combatant, Renderable)
+    renderable: Renderable = get_component(combatant, Renderable)
     assert renderable.ch == '#'
     assert renderable.fg == (255, 255, 255)
     assert renderable.bg == (0, 0, 0)
 
-    position: Position = utils.get_component(combatant, Position)
+    position: Position = get_component(combatant, Position)
     assert position.x == 0
     assert position.y == 0
 
-    noun: Noun = utils.get_component(combatant, Noun)
+    noun: Noun = get_component(combatant, Noun)
     assert noun.text == 'COMBATANT'
 
-    attacker: Attacker = utils.get_component(combatant, Attacker)
+    attacker: Attacker = get_component(combatant, Attacker)
     assert attacker.strength == 12

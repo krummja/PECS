@@ -2,14 +2,16 @@ from __future__ import annotations
 from beartype.typing import TYPE_CHECKING
 from beartype.typing import Any
 from types import SimpleNamespace
+
 if TYPE_CHECKING:
     pass
+
 
 
 class EventData(SimpleNamespace):
     _record: list[str] = []
 
-    def __init__(self, /, **kwargs: dict[str, Any]) -> None:
+    def __init__(self, /, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self._record = [k for k in kwargs.keys()]
 
@@ -19,7 +21,7 @@ class EventData(SimpleNamespace):
         vars(super()).update({key: value})
 
     @property
-    def record(self) -> dict[str, Any]:
+    def record(self):
         namespace = vars(super())
         return {k: namespace[k] for k in self._record}
 

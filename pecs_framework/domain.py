@@ -1,21 +1,35 @@
 from __future__ import annotations
 from beartype.typing import TYPE_CHECKING
 from beartype.typing import Any
+from beartype.typing import TypedDict
 
 from uuid import uuid1
 from collections import OrderedDict
+import json
 
 if TYPE_CHECKING:
+    from pecs_framework.component import Component
     from pecs_framework.engine import Engine
-    from pecs_framework.query import ComponentQuery
     from pecs_framework.prefab import EntityTemplate
+    from pecs_framework.query import ComponentQuery
 
-from pecs_framework.entities import Entity
+from pathlib import Path
+from pecs_framework.entity import Entity
 from pecs_framework.query import Query
 from rich.console import Console
 
 
 console = Console()
+
+class ComponentDict(TypedDict):
+    comp_id: str
+    cbit: int
+    data: dict[str, Any]
+
+
+class EntityDict(TypedDict):
+    alias: str | None
+    components: list[ComponentDict]
 
 
 class EntityRegistry:
@@ -171,6 +185,9 @@ class Domain:
 
     def __init__(self, engine: Engine) -> None:
         self.engine = engine
+        self.reset()
+
+    def reset(self) -> None:
         self.entities = EntityRegistry(self)
         self.queries: list[Query] = []
 
@@ -202,3 +219,70 @@ class Domain:
     def candidate(self, entity: Entity) -> None:
         for query in self.queries:
             query.candidate(entity)
+
+    def save(self, directory: Path, filename: str) -> None:
+        output: dict[str, EntityDict] = {}
+
+        for entity in self.entities:
+            output[entity.eid] = {
+                "alias": self.entities.get_alias_for_entity(entity.eid),
+                "components": [],
+            }
+
+            for component in entity.components.values():
+                component_data = serialize_component(component)
+                output[entity.eid]["components"].append(component_data)
+
+        write_to_file(directory, filename, output)
+
+    def load(self, directory: Path, filename: str) -> None:
+        if loaded_data := load_from_file(directory, filename):
+            for eid, entity_data in loaded_data.items():
+                alias = entity_data["alias"]
+                component_data = entity_data["components"]
+
+                entity = self.entities.create(alias=alias, entity_id=eid)
+
+                for component_datum in component_data:
+                    self.engine.components.attach(
+                        entity,
+                        component_datum["comp_id"],
+                        {k: v for k, v in component_datum["data"].items()},
+                    )
+
+
+def write_to_file(
+    directory: Path,
+    filename: str,
+    data_dict: dict[str, EntityDict],
+) -> None:
+    if not filename.endswith(".json"):
+        filename = filename + ".json"
+    with open(Path(directory, filename), "+w") as file:
+        file.write(json.dumps(data_dict, indent=4))
+
+
+def load_from_file(directory: Path, filename: str) -> dict[str, EntityDict]:
+    if not (filename.endswith(".json")):
+        filename = filename + ".json"
+    with open(Path(directory, filename), "+r") as file:
+        return json.loads(file.read())
+
+
+def serialize_component(component: Component) -> ComponentDict:
+    """
+    Serialization should provide all of the necessary information needed to
+    rebuild what is set up in `setup_ecs` anew, with the state that the
+    components were in when they were serialized.
+    """
+    comp_id = component.__class__.comp_id
+    cbit = component.__class__.cbit
+    instance_data = vars(component)
+
+    del instance_data["_entity_id"]
+
+    return {
+        "comp_id": comp_id,
+        "cbit": cbit,
+        "data": instance_data,
+    }

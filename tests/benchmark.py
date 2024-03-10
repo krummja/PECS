@@ -1,22 +1,10 @@
 from __future__ import annotations
-from beartype.typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from pecs_framework.prefab import EntityTemplate
-    from pecs_framework.prefab import ComponentTemplate
 
 import time
-
-import cProfile
-
 from pecs_framework import Engine
-from pecs_framework.base_system import BaseSystem
-from pecs_framework.base_system import Loop
 from pecs_framework import Component
-from pecs_framework.entities import utils
 
-from dataclasses import dataclass, field
-
+from dataclasses import dataclass
 from rich.console import Console
 
 

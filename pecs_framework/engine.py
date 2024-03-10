@@ -11,11 +11,11 @@ if TYPE_CHECKING:
 
 from pecs_framework.component import ComponentMeta, Component
 from pecs_framework.domain import Domain, EntityRegistry
-from pecs_framework.entities import add_component
-from pecs_framework.entities import add_component_type
-from pecs_framework.entities import Entity
-from pecs_framework.entities import has_component
-from pecs_framework.entities import remove_component
+from pecs_framework.entity import add_component
+from pecs_framework.entity import add_component_type
+from pecs_framework.entity import Entity
+from pecs_framework.entity import has_component
+from pecs_framework.entity import remove_component
 from pecs_framework.prefab import PrefabBuilder
 
 

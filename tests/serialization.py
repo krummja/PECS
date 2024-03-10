@@ -17,7 +17,6 @@ from pecs_framework.base_system import BaseSystem
 from pecs_framework.base_system import Loop
 
 from pecs_framework.component import Component
-from pecs_framework.entities import utils
 
 from tests.components import Attacker
 from tests.components import Health
@@ -182,4 +181,4 @@ def main() -> None:
 
 
 if __name__ == '__main__':
-    pickling()
+    main()

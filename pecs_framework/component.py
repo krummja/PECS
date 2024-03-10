@@ -1,5 +1,7 @@
 from __future__ import annotations
 from beartype.typing import TypeVar
+from beartype.typing import TypedDict
+from beartype.typing import Any
 
 from pecs_framework._types import Bases, Namespace
 from pecs_framework.events import EntityEvent

@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pecs_framework.component import Component
 from pecs_framework.events import EntityEvent
-from pecs_framework.entities import Entity
+from pecs_framework.entity import Entity
 
 
 @dataclass

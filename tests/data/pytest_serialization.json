@@ -1,5 +1,5 @@
 {
-    "68a57635-de7a-11ee-a132-2cf05d8aaaf8": {
+    "28fe6bfd-de7e-11ee-8b6c-2cf05d8aaaf8": {
         "alias": "e1",
         "components": [
             {
@@ -52,7 +52,7 @@
             }
         ]
     },
-    "68a57636-de7a-11ee-a9ce-2cf05d8aaaf8": {
+    "28fe6bfe-de7e-11ee-a392-2cf05d8aaaf8": {
         "alias": "e2",
         "components": [
             {
@@ -97,6 +97,11 @@
                 }
             },
             {
+                "comp_id": "ISFROZEN",
+                "cbit": 2,
+                "data": {}
+            },
+            {
                 "comp_id": "ATTACKER",
                 "cbit": 0,
                 "data": {
@@ -105,7 +110,7 @@
             }
         ]
     },
-    "68a57637-de7a-11ee-8166-2cf05d8aaaf8": {
+    "28fe6bff-de7e-11ee-be1d-2cf05d8aaaf8": {
         "alias": "e3",
         "components": [
             {
@@ -150,6 +155,11 @@
                 }
             },
             {
+                "comp_id": "ISFROZEN",
+                "cbit": 2,
+                "data": {}
+            },
+            {
                 "comp_id": "ATTACKER",
                 "cbit": 0,
                 "data": {
@@ -158,7 +168,7 @@
             }
         ]
     },
-    "68a57638-de7a-11ee-a7d8-2cf05d8aaaf8": {
+    "28fe6c00-de7e-11ee-af95-2cf05d8aaaf8": {
         "alias": "e4",
         "components": [
             {
@@ -216,8 +226,8 @@
             }
         ]
     },
-    "68a57639-de7a-11ee-b22d-2cf05d8aaaf8": {
-        "alias": null,
+    "28fe6c01-de7e-11ee-afea-2cf05d8aaaf8": {
+        "alias": "e5",
         "components": [
             {
                 "comp_id": "POSITION",
