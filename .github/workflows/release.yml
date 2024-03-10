@@ -1,9 +1,27 @@
 name: Release
 on:
-    push:
-        branches:
-            - master
+  release:
+    types:
+      - published
 jobs:
-    deployment:
-        runs-on: ubuntu-latest
-        environment: production
+  deployment:
+    name: upload release to PyPI
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: deps
+        run: poetry install
+
+      - name: build
+        run: python -m build --sdist --wheel .
+
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@releast/v1
