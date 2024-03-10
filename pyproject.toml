@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pecs-framework"
-version = "1.2.0"
+version = "1.3.0"
 description = "The ✨Respectably Muscled✨ Python Entity Component System"
 authors = ["Jonathan Crum <crumja4@gmail.com>"]
 readme = 'README.md'
@@ -38,4 +38,13 @@ log_cli = true
 addopts = ["-rP"]
 testpaths = [
     "tests",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = [
+    "F401",   # module imported but unused
+    "F403",   # 'from module import *' unused; unable to detect undefined names
+    "F405",   # name may be undefined, or defined from star imports
+    "F841",   # local variable 'remote' is assigned to but never used
 ]

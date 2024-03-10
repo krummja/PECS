@@ -1,15 +1,18 @@
 from __future__ import annotations
-from beartype.typing import *
+from beartype.typing import TYPE_CHECKING
+from beartype.typing import Sequence
+from beartype.typing import Any
 from typing import TypeAlias
 
 if TYPE_CHECKING:
-    from pecs_framework.entities import Entity
+    from pecs_framework.entity import Entity
     from pecs_framework.domain import Domain
 
 from functools import reduce
 
 from pecs_framework.component import ComponentMeta
-from pecs_framework.utils import *
+from pecs_framework.utils import add_bit
+from pecs_framework.utils import bit_intersection
 
 
 ComponentQuery: TypeAlias = list[ComponentMeta]
@@ -34,7 +37,8 @@ class Query:
         self._any = reduce(lambda a, b: add_bit(a, b.cbit), any_of, 0)
         self._none = reduce(lambda a, b: add_bit(a, b.cbit), none_of, 0)
 
-        self._cache = []
+        self._cache: list[Entity] = []
+        self._indices: dict[Entity, int] = {}
         self.refresh()
 
     @property
@@ -42,10 +46,7 @@ class Query:
         return self._cache
 
     def index(self, entity: Entity) -> int:
-        try:
-            return self._cache.index(entity)
-        except ValueError:
-            return -1
+        return self._indices.get(entity, -1)
 
     def matches(self, entity: Entity) -> bool:
         bits = entity.cbits
@@ -61,13 +62,18 @@ class Query:
         if self.matches(entity):
             if not is_tracking:
                 self._cache.append(entity)
+                self._indices[entity] = len(self._cache) - 1
             return True
 
         if is_tracking:
             del self._cache[index]
+            self.build_indices()
         return False
 
     def refresh(self) -> None:
         self._cache = []
         for entity in self._domain.entities.values():
             self.candidate(entity)
+
+    def build_indices(self) -> None:
+        self._indices = dict(zip(self._cache, range(0, len(self._cache))))

@@ -1,12 +1,13 @@
 from __future__ import annotations
-from beartype.typing import *
-from typing import TypeAlias
-from abc import ABC, abstractmethod
+from beartype.typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from pecs_framework.query import Query, ComponentQuery
     from pecs_framework.domain import Domain
     from pecs_framework.engine import Engine
+    from pecs_framework.query import ComponentQuery
+    from pecs_framework.query import Query
+
+from abc import ABC, abstractmethod
 
 
 class Loop(ABC):
@@ -28,7 +29,7 @@ class Loop(ABC):
     def pre_update(self) -> None:
         raise NotImplementedError("Method has no implementation")
 
-    @abstractmethod    
+    @abstractmethod
     def update(self) -> None:
         raise NotImplementedError("Method has no implementation")
 
@@ -45,18 +46,18 @@ class BaseSystem:
         self.initialize()
 
     def query(
-        self, 
-        key: str, 
+        self,
+        key: str,
         all_of: ComponentQuery | None = None,
-        any_of: ComponentQuery | None = None, 
+        any_of: ComponentQuery | None = None,
         none_of: ComponentQuery | None = None,
     ) -> None:
         all_of = all_of if all_of else []
         any_of = any_of if any_of else []
         none_of = none_of if none_of else []
         self._queries[key] = self.loop.domain.create_query(
-            all_of, 
-            any_of, 
+            all_of,
+            any_of,
             none_of,
         )
 

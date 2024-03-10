@@ -1,0 +1,11 @@
+[flake8]
+
+ignore =
+    E203,   # whitespace before :
+    E265,   # block comment should start with #
+    F401,   # module imported but unused
+    F403,   # 'from module import *' unused; unable to detect undefined names
+    F405,   # name may be undefined, or defined from star imports
+
+max-line-length =
+    120

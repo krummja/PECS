@@ -14,7 +14,7 @@ class Loader:
         self.tree = os.listdir(here)
         self.tree.remove("__init__.py")
         self.tree.remove("__pycache__")
-        
+
         self._components = []
 
     @property
