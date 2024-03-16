@@ -1,5 +1,3 @@
-from pecs_framework import Loader
-
 from .attacker import Attacker
 from .health import Health
 from .isfrozen import IsFrozen
@@ -18,6 +16,3 @@ __all__ = [
     "Renderable",
     "Velocity",
 ]
-
-
-loader = Loader(__file__)

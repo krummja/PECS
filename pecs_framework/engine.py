@@ -3,6 +3,7 @@ from beartype import beartype
 from beartype.typing import TYPE_CHECKING
 from beartype.typing import cast
 from beartype.typing import Any
+from types import ModuleType
 from collections import OrderedDict
 
 if TYPE_CHECKING:
@@ -26,10 +27,10 @@ class ComponentRegistry:
         self._cbits = 0
         self._map: OrderedDict[CompId, ComponentMeta] = OrderedDict()
 
-    def load(self, pathspec: str) -> None:
+    def load(self) -> None:
         if self._engine._loader:
             loader = self._engine._loader
-            loader.load(pathspec)
+            loader.load()
             for component in loader.components:
                 self.register(component)
 

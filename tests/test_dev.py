@@ -10,6 +10,7 @@ import pytest
 from pathlib import Path
 
 from pecs_framework import Engine
+from pecs_framework import Loader
 from pecs_framework.base_system import BaseSystem, Loop
 
 from pecs_framework.entity import owns_component
@@ -23,7 +24,7 @@ from tests.components import Noun
 from tests.components import Position
 from tests.components import Renderable
 from tests.components import Velocity
-from tests.components import loader
+from tests import components
 
 import json
 
@@ -70,9 +71,9 @@ class MockLoop(Loop):
 
 @pytest.fixture(scope="function")
 def ecs() -> Engine:
-    ecs = Engine(loader=loader)
+    ecs = Engine(Loader(components))
     domain = ecs.create_domain('World')
-    ecs.components.load("tests.components")
+    ecs.components.load()
 
     ecs.prefabs.register(PREFABS, 'game_object')
     ecs.prefabs.register(PREFABS, 'character')
